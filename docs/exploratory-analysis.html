@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.30">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Price Prediction and Sentiment Analysis</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-de070a7b0ab54f8780927367ac907214.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-991b1886d3c685c7aa2b62b80640c7af.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link rel="stylesheet" href="styles.css">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+
+
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+
+
+</head>
+
+<body class="nav-fixed fullcontent quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">📈Market Mood Swings</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="./index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./data-ingestion.html"> 
+<span class="menu-text">Data Ingestion &amp; Preprocessing</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link active" href="./exploratory-analysis.html" aria-current="page"> 
+<span class="menu-text">Exploratory Analysis</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-results--insights" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Results &amp; Insights</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-results--insights">    
+        <li>
+    <a class="dropdown-item" href="./results/base-features.html">
+ <span class="dropdown-text">Base Features Only</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./results/technical-indicators.html">
+ <span class="dropdown-text">Base + Technical Indicators</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./results/sentiment-analysis.html">
+ <span class="dropdown-text">Base + Technical Indicators + Sentiment Analysis</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title">Exploratory Data Analysis</h1><button type="button" class="btn code-tools-button dropdown-toggle" id="quarto-code-tools-menu" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi"></i> Code</button><ul class="dropdown-menu dropdown-menu-end" aria-labelelledby="quarto-code-tools-menu"><li><a id="quarto-show-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Show All Code</a></li><li><a id="quarto-hide-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Hide All Code</a></li><li><hr class="dropdown-divider"></li><li><a id="quarto-view-source" class="dropdown-item" href="javascript:void(0)" role="button">View Source</a></li></ul></div></div>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="correlation-matrix-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="correlation-matrix-analysis">Correlation Matrix Analysis</h2>
+<p>We perform a correlation matrix analysis to understand the relationships between the various features in our dataset.</p>
+</section>
+<section id="feature-correlation-matrix-for-market-mood-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="feature-correlation-matrix-for-market-mood-analysis">🔍 <strong>Feature Correlation Matrix for Market Mood Analysis</strong></h2>
+<p>This heatmap visualizes the correlation between technical indicators, sentiment scores, and Tesla stock metrics.</p>
+<ul>
+<li>Strong positive correlations appear among core price indicators (<strong>Open</strong>, <strong>High</strong>, <strong>Low</strong>, <strong>Close</strong>), and within groups like <strong>MACD</strong>, <strong>EMA</strong>, and <strong>ROC</strong>, indicating internal consistency.</li>
+<li>Sentiment features, especially from <strong>Reddit</strong> and news outlets, show minimal correlation with direct price movement, highlighting their weak linear association.</li>
+<li>This suggests that <strong>non-linear models</strong> or <strong>lag-aware forecasting</strong> might be more suitable for capturing these relationships.</li>
+</ul>
+<div id="f35811c0" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> plotly.express <span class="im">as</span> px</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.read_csv(<span class="st">"final_data.csv"</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="st">'Date'</span> <span class="kw">in</span> df.columns:</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    df[<span class="st">'Date'</span>] <span class="op">=</span> pd.to_datetime(df[<span class="st">'Date'</span>])</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>df_numeric <span class="op">=</span> df.select_dtypes(include<span class="op">=</span>[<span class="st">'float64'</span>, <span class="st">'int64'</span>])</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>correlation_matrix <span class="op">=</span> df_numeric.corr()</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> px.imshow(</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    correlation_matrix,</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    labels<span class="op">=</span><span class="bu">dict</span>(color<span class="op">=</span><span class="st">"Correlation"</span>),</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    x<span class="op">=</span>correlation_matrix.columns,</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    y<span class="op">=</span>correlation_matrix.columns,</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    color_continuous_scale<span class="op">=</span><span class="st">'RdBu'</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>fig.update_layout(title<span class="op">=</span><span class="va">None</span>)</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>fig.update_layout(</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>    coloraxis_colorbar<span class="op">=</span><span class="bu">dict</span>(</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>        x<span class="op">=</span><span class="fl">0.75</span>,</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>        thickness<span class="op">=</span><span class="dv">15</span>,</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>        title<span class="op">=</span><span class="bu">dict</span>(</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>            text<span class="op">=</span><span class="st">"Correlation"</span>,</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>            font<span class="op">=</span><span class="bu">dict</span>(size<span class="op">=</span><span class="dv">14</span>)  <span class="co"># &lt;-- Corrected property path</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>        ),</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>        tickfont<span class="op">=</span><span class="bu">dict</span>(size<span class="op">=</span><span class="dv">12</span>)</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>fig.update_xaxes(linewidth<span class="op">=</span><span class="dv">1</span>, linecolor<span class="op">=</span><span class="st">'black'</span>, mirror<span class="op">=</span><span class="va">True</span>, ticks<span class="op">=</span><span class="st">'inside'</span>, showline<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>fig.update_yaxes(linewidth<span class="op">=</span><span class="dv">1</span>, linecolor<span class="op">=</span><span class="st">'black'</span>, mirror<span class="op">=</span><span class="va">True</span>, ticks<span class="op">=</span><span class="st">'inside'</span>, showline<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>fig.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+        <script type="text/javascript">
+        window.PlotlyConfig = {MathJaxConfig: 'local'};
+        if (window.MathJax && window.MathJax.Hub && window.MathJax.Hub.Config) {window.MathJax.Hub.Config({SVG: {font: "STIX-Web"}});}
+        </script>
+        <script type="module">import "https://cdn.plot.ly/plotly-3.0.1.min"</script>
+        
+</div>
+<div class="cell-output cell-output-display">
+<div>            <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_SVG"></script><script type="text/javascript">if (window.MathJax && window.MathJax.Hub && window.MathJax.Hub.Config) {window.MathJax.Hub.Config({SVG: {font: "STIX-Web"}});}</script>                <script type="text/javascript">window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
+        <script charset="utf-8" src="https://cdn.plot.ly/plotly-3.0.1.min.js"></script>                <div id="8f36d21c-36b3-4bd6-9d30-b3c7b8ff2f70" class="plotly-graph-div" style="height:525px; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("8f36d21c-36b3-4bd6-9d30-b3c7b8ff2f70")) {                    Plotly.newPlot(                        "8f36d21c-36b3-4bd6-9d30-b3c7b8ff2f70",                        [{"coloraxis":"coloraxis","name":"0","x":["Unnamed: 0","Open","High","Low","Close","Volume","Dividends","Stock Splits","Exchange_Open","Exchange_High","Exchange_Low","Exchange_Close","Exchange_Volume","EMA_7","EMA_30","EMA_60","MACD","MACD_Signal","RSI","Stochastic","ROC_1","ROC_2","ROC_7","ROC_30","ROC_60","Bollinger_Middle_Band","Bollinger_Upper_Band","Bollinger_Lower_Band","ATR","OBV","TP","VWAP","TWAP","CMF","Advance_Decline","CVI","reddit_sentiment","reddit_score","guardian_sentiment","nyt_sentiment"],"y":["Unnamed: 0","Open","High","Low","Close","Volume","Dividends","Stock Splits","Exchange_Open","Exchange_High","Exchange_Low","Exchange_Close","Exchange_Volume","EMA_7","EMA_30","EMA_60","MACD","MACD_Signal","RSI","Stochastic","ROC_1","ROC_2","ROC_7","ROC_30","ROC_60","Bollinger_Middle_Band","Bollinger_Upper_Band","Bollinger_Lower_Band","ATR","OBV","TP","VWAP","TWAP","CMF","Advance_Decline","CVI","reddit_sentiment","reddit_score","guardian_sentiment","nyt_sentiment"],"z":{"dtype":"f8","bdata":"AAAAAAAA8D8JyW6D\u002f03VPzAhkvNdVdU\u002fY2l9K11r1T+5SL9uxFjVPx8KAeslgcm\u002fAAAAAAAA+H8zVKrd6b+jvxcdhZhLVuY\u002fcUI51WZ35j+00BUo5k7mP19Yv+UlYuY\u002fKgqgk10L3T9Vw0kuov3VP6RhbaGRk9g\u002fHJ1sh\u002fNS2z+0+kAfW\u002fq9v8Zv12tcu7+\u002f2fOvePP5ub\u002fugaUt8Zy8v4ma1EncPqS\u002f8Hsx\u002fcm9rL\u002fyb6D8BD+6vwaM6aJsE8i\u002fHj7AtZF9y782waxIrrjXP1pm6Ko1\u002ftc\u002fvwV6ZcY61j\u002fr+UXZplDSP99ILGOV0+0\u002fV+co2JOE1T\u002f3r\u002fyt\u002fhfrPzbBrEiuuNc\u002fnNom4\u002fRGtb+rwwyq3VnsP1Nb4oFm5O8\u002fo2knTvjaxT+LvrltvkTMP\u002fVjZ3y9KKW\u002f4iybSXHUtL8JyW6D\u002f03VPwAAAAAAAPA\u002fOXjJ65Tu7z\u002fkH8tSVervPz3ZG+nD0e8\u002fKgBILaFF3L8AAAAAAAD4f9icpoff3Iu\u002fnjhaPSp+4j+ynH67cIXiP9l0gPXUUuI\u002fzccVAoFY4j8e+wJdb\u002f3XP4EutmsJve8\u002fLFoJkf0d7j\u002f8NasllyHsP4jtdeLVA9Q\u002fX2rN1WS51T8igMQrVi7DP7O4V3k7kbM\u002fRZ8lLmkwsL82B\u002fRYS9Cdv+ZsRe4HYo8\u002ftWXjv55Owj9CHKlpSaLPP1IVCkvFEe4\u002f62R7KSMD7j8IpxmBLbLsP6Jyn4FTbOc\u002fNraakTie4T8MWkNkIdvvP2h9k59PGeA\u002fUhUKS8UR7j8hg17h1bLBP8JWH1Arx+E\u002fOIkQpoW\u002f1T9Pdt35JTuyPzLm4Z4edLE\u002ftQZaPk0frr8+tAPEeb+1PzAhkvNdVdU\u002fOXjJ65Tu7z8AAAAAAADwP0f5cJbR6e8\u002fyQ4274rr7z8dM2gMFiPbvwAAAAAAAPh\u002f8TYlUi55hL9b7HSIOm\u002fiP2aAT8gOg+I\u002f39TvvKlJ4j94nlkhh1jiP9KCU5Ocddg\u002fVYP8qYC77z+ZFShr9RvuP5ZVabtQJ+w\u002fpdp9H3nz0z81lk2iiXrVP7BKFJF2UsQ\u002fXTojmvQYtz\u002fjg2sqKXiavzSMfpyMhHa\u002fvA\u002fdvxBmnT9wzsThK+PCPy19Ude6wM8\u002fDqDF3qkI7j9h7lPawgvuP68SX2Olkuw\u002fFSgI7nSy5z9y5sq6y5rhP6I1Wsamzu8\u002f+KRVKgUW4D8OoMXeqQjuPxArakDG28I\u002fSCLBaGjD4T8kag89DsHVPzIIjIXNk7I\u002fvT1vRsHDsT8JbKZZMg+uv+\u002ftoarZJrY\u002fY2l9K11r1T\u002fkH8tSVervP0f5cJbR6e8\u002fAAAAAAAA8D\u002fKfkLZC+3vPyzSPJiXV92\u002fAAAAAAAA+H+umeXqwuCLv8Z23jaIleI\u002fAjLDrNih4j8HvJOJAnviP8KWRsvggeI\u002fJi0jVMZM1z+VQMXxq6\u002fvP7Bzgr1r+u0\u002fazIyuCX66z\u002fRnBqTV5HUP8Y9YfI9DdY\u002fbOQyjnUqxT83Gs4qZ8m5PzWHI4BqZZe\u002f6HxFnZW+Sr\u002fiqXfBCQmhP5p8IfWiesM\u002fW1lrkxEd0D9fKtQtEu7tPwcAcaxEze0\u002f4oyM3Z+n7D8DY75QGOfmP4nXX60pweE\u002fti9r29rG7z9+sNswICrgP18q1C0S7u0\u002fCpHP+VJuwz+Sd6bI4OvhP3ZzpKBY5tU\u002fR1MhRQj2sT8vRzbuUbKwPzirM1RtBq6\u002fYSFSqiM0tj+5SL9uxFjVPz3ZG+nD0e8\u002fyQ4274rr7z\u002fKfkLZC+3vPwAAAAAAAPA\u002fl\u002fI57u70278AAAAAAAD4f5rte7efcYK\u002fAJuw0Mh84j86Qz35kJXiP70erc1aZ+I\u002f9gXLimt94j8Gxr9TkdTXP92+kUFDp+8\u002fW8G\u002fbkv17T+UUeyIZfvrP9xNGNeeZtQ\u002fZzieev7B1T9Uc832mAfGPxIezG+5Q70\u002fB4ZgSGaQkj\u002frqUBx6QCZPzQi\u002fvsnCac\u002fI4axW3gNxD9Ok8StykLQP6uSsks34+0\u002fVHLZtV7Y7T\u002fDblbn+oDsPxz4Dz6JQuc\u002fvcOTn+Sv4T90yFcVurDvP2ExqBQ+FOA\u002fq5KySzfj7T9MWqFUorjEPz6n8Ra01uE\u002fusi5VlXO1T8ePsWFoJWyPzqO25tsYLE\u002fFukVnNrarL8t1f0OfJS2Px8KAeslgcm\u002fKgBILaFF3L8dM2gMFiPbvyzSPJiXV92\u002fl\u002fI57u70278AAAAAAADwPwAAAAAAAPh\u002fd8cT3Z9htj+HeVz6d87Wv\u002fKmC7ikoda\u002foHoFxnUA17+MGqRKosXWv39yt1iiHpm\u002fg58CsAqM3b\u002fMAqYavBPgvyaPZrJEceC\u002fRaIMp\u002fjZtj+XMCQ3YIymP\u002fmKLgzQ1MQ\u002f\u002fQlv2QoOwD+spEkOcCrAP53ZZX7ArMc\u002fA59698XK0D80V8MyfZrRPy5gQsO\u002fqcM\u002fEirgKymv378L6tfHWhfbv4mfciV3CuK\u002fMIvgDxMTxb+hVZNHVlfUv6lww4X7zdy\u002fI+cgTY1Y2L8SKuArKa\u002ffv0uMDWHJQMw\u002fdNHQxbRk1L\u002f8F89rCO3Kv+9\u002fYU45R6c\u002fDcN9Fi0UZz9aJ93G1PukP8K73xEOZJ+\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8zVKrd6b+jv9icpoff3Iu\u002f8TYlUi55hL+umeXqwuCLv5rte7efcYK\u002fd8cT3Z9htj8AAAAAAAD4fwAAAAAAAPA\u002fadXNXARHn78B68B+nQGfv58P9OQQCJ6\u002fabQW2NEInr+tY4pq2gukv5zmoBdLLY+\u002fzyCCg8LRmr+1nbY4vAyhv0EQ28FSDKQ\u002fAXM+Nt2goj8uZwioy7WsPyVfwpRj7qA\u002fV\u002fYL7Y+Csj+kwYlr4yGnP4YysCosbaY\u002fWYtGoc6mqj9Psb1GmEW8PwDZH\u002frXMJe\u002fRL9nnedvk79IClZrMuqav5Ha\u002ffEeyIu\u002ffbOPxsJXpL+cm3bFoJqLvzovVIQudKW\u002fANkf+tcwl7\u002f7AQxCGBKUP+arVfWCHqO\u002f7F+9omZ7pL9OJfcLKZJ7v7GMMEJFZoW\u002f\u002fCxNZ92Vi78HuKPepQdBvxcdhZhLVuY\u002fnjhaPSp+4j9b7HSIOm\u002fiP8Z23jaIleI\u002fAJuw0Mh84j+HeVz6d87WvwAAAAAAAPh\u002fadXNXARHn78AAAAAAADwP4+TyLvZ+O8\u002f8MKSlLH37z9QcVUpl+7vP+65TEATf98\u002f0g03HclN4j+awD\u002fNnmrhP0n8TjHqL+A\u002fmCkAfe7FxT95tRaGtszGP6rpjNksNrc\u002fGJgzfDQDqz+hV6VHjKuMv5MQPtQKVXA\u002fTpjVDY3Tlz8QhPfn7Q+nP4BkjXLbhr0\u002futStHWt64T+h0g932GPhP+8dToUwwOA\u002fOb8OUPCO2D\u002fXnXzTX63nP29NiigOZOI\u002fIreCjEMx4D+61K0da3rhPzlllq7yhaw\u002f\u002fCK5Op484z9kPRUwZFLnP59JeSsU88Y\u002fToRHaxwMwT+avxfJXf58Pxf5hahH7Js\u002fcUI51WZ35j+ynH67cIXiP2aAT8gOg+I\u002fAjLDrNih4j86Qz35kJXiP\u002fKmC7ikoda\u002fAAAAAAAA+H8B68B+nQGfv4+TyLvZ+O8\u002fAAAAAAAA8D9zzDVfMvXvP+1iSC609+8\u002fq90CXbwI4D\u002f7LFyFzmPiPwOMn3Mtj+E\u002fOmDxWRdg4D8HkTfsnPHEP9B6igUI+MU\u002fAGi8xEqntj9kHTbEYkyrPy2wXwAW40W\u002fQSRSZQ+tgz+QKLPRzfGWP\u002fQpI0\u002fM76Q\u002fAcBGovpRvD9q4VG4NpnhPz66duAlh+E\u002fr9WE9bDX4D8RZPHO2SPZP2DfEbIMxec\u002fJSL\u002fqqRx4j8d+f1M2FPgP2rhUbg2meE\u002fiNI36CFdrD+4oNSINVPjP4Sp\u002fHLKb+c\u002f6NNYcirvxj9xNkQMxHLBP6UTeFyGZXs\u002fvzUEo0RenD+00BUo5k7mP9l0gPXUUuI\u002f39TvvKlJ4j8HvJOJAnviP70erc1aZ+I\u002foHoFxnUA178AAAAAAAD4f58P9OQQCJ6\u002f8MKSlLH37z9zzDVfMvXvPwAAAAAAAPA\u002fQY1LVHj47z9aLF8fYN\u002fePx+DakRGIuI\u002fIW0s70wu4T9mcSG2fN3fP+c1jV4xk8Y\u002fHElGasxPxz9K30QAVX25P4usC5QoK7E\u002f\u002fiCS0CLgeT8feGgN+RaUP5eViwDq1aE\u002fmYE6mjFXqj\u002fs5SKMYnS+P0rTwPlDP+E\u002f\u002fWuGzxMl4T\u002f5RiuMi4zgP0nr180myNc\u002f3AAxFTys5z873ix2NTjiP\u002f\u002ffApROIuA\u002fStPA+UM\u002f4T\u002f3wJDM9wiwPzHpci9OO+M\u002fj0NReJFO5z8v0iduwRrHP0rN4FXc7sA\u002fbM0TD8MEgD+tk8378\u002fidP19Yv+UlYuY\u002fzccVAoFY4j94nlkhh1jiP8KWRsvggeI\u002f9gXLimt94j+MGqRKosXWvwAAAAAAAPh\u002fabQW2NEInr9QcVUpl+7vP+1iSC609+8\u002fQY1LVHj47z8AAAAAAADwPyYiJ02Md98\u002f8qH3Dlw14j\u002fuizusSlDhP00QDEhFG+A\u002fh2My7ve5xT\u002fZ+2Gmg33GPwSOSrkL3bg\u002fAopZY3lSsT+a5VYZCnCUP27xX5IPApo\u002fdccf3dFIoT+F4XWx52qoP\u002fiDsO\u002fadL0\u002f\u002fMFgLhJc4T8Lj+uZY0fhP6CLTEvdoOA\u002f\u002fpxOlfFn2D9PtdKRdLXnP70iW+0hQuI\u002fopyB8D814D\u002f8wWAuElzhP6K+mZOMCLA\u002fy4wltUdC4z8WaGh2Wl7nP4kgZpS2E8c\u002fDeiZiDsvwT+SVUqcf\u002fyBPw6YOsNmGJ4\u002fKgqgk10L3T8e+wJdb\u002f3XP9KCU5Ocddg\u002fJi0jVMZM1z8Gxr9TkdTXP39yt1iiHpm\u002fAAAAAAAA+H+tY4pq2gukv+65TEATf98\u002fq90CXbwI4D9aLF8fYN\u002fePyYiJ02Md98\u002fAAAAAAAA8D\u002fjgwqyRUnYP92ZDY0lSdg\u002fMgRSYi3M1z9zEKC+3kSnPxNBY\u002fSa+ak\u002fil0iy7r5bz9dIIopliShv23VeXAd1Ka\u002f48aNiectqL\u002fe\u002flOg3ryVv0zoucA7GYA\u002fkQWn\u002fo77oD+p+cY89YHXP3HVyRUhFdk\u002fKJ+UrHlY1D+mgHc3KDbdP2YwjBrQ1Nw\u002f8ED903VJ2D+h89rKq2zTP6n5xjz1gdc\u002fU3MycJ+LsD8nnsXzTCjWP6Z6lg7eTt0\u002fwBwI+9H2wj+SD03XSDbGP0e39b3PAo4\u002fDSlv+BIPn79Vw0kuov3VP4EutmsJve8\u002fVYP8qYC77z+VQMXxq6\u002fvP92+kUFDp+8\u002fg58CsAqM3b8AAAAAAAD4f5zmoBdLLY+\u002f0g03HclN4j\u002f7LFyFzmPiPx+DakRGIuI\u002f8qH3Dlw14j\u002fjgwqyRUnYPwAAAAAAAPA\u002f+7is9CTu7j\u002fpD9d+DRTtP7gXG+EbfdA\u002fk0acJE680z\u002fVezeD8jOzP\u002f06rGPgh2+\u002f5e56QgPvsr+UukdpnO+2v4ijY0V6ELO\u002f5Dj69sz4tj+tIVBipqbLP0yUu00w7+4\u002f5FYrMVrD7j+jgZtkmKrtPzxRUvMhH+g\u002fD27MfKjd4T\u002f506\u002fSktbvP9isWym2seA\u002fTJS7TTDv7j+ndRnh3hK3Pxi1uZ7eBeI\u002frWGRiINl1j+Z4nVnNr6tP17y3EhBAbU\u002f\u002fU73jnylrr\u002frUFerpoO0P6RhbaGRk9g\u002fLFoJkf0d7j+ZFShr9RvuP7Bzgr1r+u0\u002fW8G\u002fbkv17T\u002fMAqYavBPgvwAAAAAAAPh\u002fzyCCg8LRmr+awD\u002fNnmrhPwOMn3Mtj+E\u002fIW0s70wu4T\u002fuizusSlDhP92ZDY0lSdg\u002f+7is9CTu7j8AAAAAAADwP+jMGk0MWe8\u002fD0159Rj4aD+MH8BBMFqzP\u002fy4rr+A4Ly\u002fR04HxoTWwr8Sy\u002fh3bE26v9+UAFWRHcK\u002fh0Uf60i8y7\u002fD0pFP\u002fTLBv16CeFoQrak\u002fKh28goi57z9\u002fYvvaAkjvP0uhXZ0Oxe4\u002fYZa8Dycv6T\u002fU+euf4lLiP\u002fa\u002fxYWEU+4\u002fyS8AuFPe4j8qHbyCiLnvPzUhnmd7yLO\u002fZdQbjsR34j805KyBTrvYPydQpwHkRKM\u002fxO8qWfgdwj8D4g8Nzcuzv6vBcW+Z0Ks\u002fHJ1sh\u002fNS2z\u002f8NasllyHsP5ZVabtQJ+w\u002fazIyuCX66z+UUeyIZfvrPyaPZrJEceC\u002fAAAAAAAA+H+1nbY4vAyhv0n8TjHqL+A\u002fOmDxWRdg4D9mcSG2fN3fP00QDEhFG+A\u002fMgRSYi3M1z\u002fpD9d+DRTtP+jMGk0MWe8\u002fAAAAAAAA8D\u002f+jDOB8K7Dvy6Q5vwk37m\u002fmk8B6KNfxr+9ShQGjBnHv8828XSlJru\u002fzio2MHQPw79SLIRtLQDQv3EKQnPlZtG\u002fqcSZ6rMfv7+WTD5inZ7uPwd0SD+MIu4\u002fssRC6VnF7T\u002fyRew\u002fLNboP7S8LX9DxOI\u002fhCTJOO9d7D+m\u002f8LedizlP5ZMPmKdnu4\u002fQhohjipPwr8SIxd1vg3jP0fG7rD2Jts\u002f+bxK+iAImz9akkTLlerGPyJtj3I2h7e\u002faXunzd5PnD+0+kAfW\u002fq9v4jtdeLVA9Q\u002fpdp9H3nz0z\u002fRnBqTV5HUP9xNGNeeZtQ\u002fRaIMp\u002fjZtj8AAAAAAAD4f0EQ28FSDKQ\u002fmCkAfe7FxT8HkTfsnPHEP+c1jV4xk8Y\u002fh2My7ve5xT9zEKC+3kSnP7gXG+EbfdA\u002fD0159Rj4aD\u002f+jDOB8K7DvwAAAAAAAPA\u002f5vHZYkuT7j\u002fb39kyqEXlPyRXDNE0790\u002fpk+FHoXesj\u002fzCLZ92fLBP5IZv\u002fw9ptw\u002fEeIwwue66z+sF+Td5mjlPzxxaUXOw6Y\u002fhGGolxuisj8wrcHwZMN3P531lP5beZe\u002fGsqPtKnmhD9TTWSJTWPTP\u002fLMmHy0k8m\u002fPHFpRc7Dpj9KY672frbjP57JDirkx4s\u002fwVjBpq\u002fpub+nh+SE\u002fiizP1NZu7Qflsy\u002fMnUQbuv5rz\u002f7EU2Mp6m7P8Zv12tcu7+\u002fX2rN1WS51T81lk2iiXrVP8Y9YfI9DdY\u002fZzieev7B1T+XMCQ3YIymPwAAAAAAAPh\u002fAXM+Nt2goj95tRaGtszGP9B6igUI+MU\u002fHElGasxPxz\u002fZ+2Gmg33GPxNBY\u002fSa+ak\u002fk0acJE680z+MH8BBMFqzPy6Q5vwk37m\u002f5vHZYkuT7j8AAAAAAADwP7KxD0b5yt4\u002fVqQIwyP00D+4WD0\u002fByCQPxOVFo\u002fX9KM\u002fDr0Umi4ozj9e7z7Iua\u002fqP0MbSNpQ8OY\u002fB\u002fHAudywwT\u002faw9HEuszDPzj+CMKQPbw\u002f4xmwjQRVoT96VbGVEmiOP72qFmZIedU\u002fRkQ1uG8Oyr8H8cC53LDBPz6O1+4OrN8\u002fZUAdnY0ClD9z6+mim1u7v9qS9DXmAas\u002fcCFsdZUgzb98EbFLlZqwPyUvOQqZCr0\u002f2fOvePP5ub8igMQrVi7DP7BKFJF2UsQ\u002fbOQyjnUqxT9Uc832mAfGP\u002fmKLgzQ1MQ\u002fAAAAAAAA+H8uZwioy7WsP6rpjNksNrc\u002fAGi8xEqntj9K30QAVX25PwSOSrkL3bg\u002fil0iy7r5bz\u002fVezeD8jOzP\u002fy4rr+A4Ly\u002fmk8B6KNfxr\u002fb39kyqEXlP7KxD0b5yt4\u002fAAAAAAAA8D+9FzzjWIjqP+AReaqDDNI\u002fyRmcX7l+2T8lpddm8L3mPw40AwNWtuM\u002fE3pLongn1z\u002fnBoAseZi8v\u002feuYRMmxrS\u002fACTb3wSnwr+Es4sgYp+5v1Eys\u002f\u002foK5a\u002fuc\u002fxsh18wD9WUEhkcy\u002fBv+cGgCx5mLy\u002ffpcw1FKB5D9\u002fiwkz4defv5aiW9Ima7e\u002fz6w6RC4btT8GyFol3Ce+v7bk4pflxqU\u002fSpjSAzdqsj\u002fugaUt8Zy8v7O4V3k7kbM\u002fXTojmvQYtz83Gs4qZ8m5PxIezG+5Q70\u002f\u002fQlv2QoOwD8AAAAAAAD4fyVfwpRj7qA\u002fGJgzfDQDqz9kHTbEYkyrP4usC5QoK7E\u002fAopZY3lSsT9dIIopliShv\u002f06rGPgh2+\u002fR04HxoTWwr+9ShQGjBnHvyRXDNE0790\u002fVqQIwyP00D+9FzzjWIjqPwAAAAAAAPA\u002fZzuYC7Km3D\u002fG6JEV74riPwggCM3GFek\u002f3AjUQVtf3T\u002fSFM\u002fMqdjRP1gviQhmbsS\u002f0MQZ6Kwuwr+c2KcIClnGv\u002f+WsgqAYMG\u002fKM2oQKQwqb+hi2HCmUanP9KpYq53SsK\u002fWC+JCGZuxL\u002fXzrIWXSniP5gRlHwsvLC\u002f0Yqpunn5ub\u002fLgK0KnNGyPxTqgOA55bq\u002fXHM3sA6klT8Wlxah\u002fdawP4ma1EncPqS\u002fRZ8lLmkwsL\u002fjg2sqKXiavzWHI4BqZZe\u002fB4ZgSGaQkj+spEkOcCrAPwAAAAAAAPh\u002fV\u002fYL7Y+Csj+hV6VHjKuMvy2wXwAW40W\u002f\u002fiCS0CLgeT+a5VYZCnCUP23VeXAd1Ka\u002f5e56QgPvsr8Sy\u002fh3bE26v8828XSlJru\u002fpk+FHoXesj+4WD0\u002fByCQP+AReaqDDNI\u002fZzuYC7Km3D8AAAAAAADwPw5JYeFgSuY\u002fHFdLVpaA2D8GLCqpdsfGP7UtezWZ+Lo\u002fNxxmNRtZu78XRSA2\u002fAG5v08gU0OzDL2\u002fTx4m9V1ysb9N4NSal5qhv3JOylN7trm\u002f7XLbs+Q6s783HGY1G1m7v9YvNUc+6Mk\u002fbshQhw9Bor+Yf2LRDNqjv+r38aJaGrA\u002fmsF\u002fSu+9pb85hy++oqihP+Xz\u002fZ5gZqQ\u002f8Hsx\u002fcm9rL82B\u002fRYS9CdvzSMfpyMhHa\u002f6HxFnZW+Sr\u002frqUBx6QCZP53ZZX7ArMc\u002fAAAAAAAA+H+kwYlr4yGnP5MQPtQKVXA\u002fQSRSZQ+tgz8feGgN+RaUP27xX5IPApo\u002f48aNiectqL+UukdpnO+2v9+UAFWRHcK\u002fzio2MHQPw7\u002fzCLZ92fLBPxOVFo\u002fX9KM\u002fyRmcX7l+2T\u002fG6JEV74riPw5JYeFgSuY\u002fAAAAAAAA8D+YU1Iz2BvhP0kO\u002fSWT9M8\u002fF6FZGW9Cwz99uMd8L\u002f3Cvw0h0yY+PsG\u002fpMujbYpTxL\u002fuUOYZ9Ya4v\u002f\u002fP1My3OKm\u002fBW1mHHeYtr+N\u002frAf9Fy7v324x3wv\u002fcK\u002f+3Uttwgm0j80Q0jJPZmqv9dj2fQvIay\u002fvSrR2sTvsT9JZzVQiy6ov60QI+b0MIo\u002fMqQiqWqLlz\u002fyb6D8BD+6v+ZsRe4HYo8\u002fvA\u002fdvxBmnT\u002fiqXfBCQmhPzQi\u002fvsnCac\u002fA59698XK0D8AAAAAAAD4f4YysCosbaY\u002fTpjVDY3Tlz+QKLPRzfGWP5eViwDq1aE\u002fdccf3dFIoT\u002fe\u002flOg3ryVv4ijY0V6ELO\u002fh0Uf60i8y79SLIRtLQDQv5IZv\u002fw9ptw\u002fDr0Umi4ozj8lpddm8L3mPwggCM3GFek\u002fHFdLVpaA2D+YU1Iz2BvhPwAAAAAAAPA\u002fNpdTIAy13j999fJRNQPSP1r3auzi4M2\u002fSziypMmEyb+GZWYZ9QfRv67iiHsYTcW\u002f1Ythd6hgtr\u002fYJsOHPwyNv3see7Hejsi\u002fWvdq7OLgzb\u002fLSWbGKA7gP1nMbrTsUbi\u002fvcr8r1Wfub9gqxmyhfu2P6SpZWMqRra\u002fd0zOXClKHT+\u002ff6A9YxmsPwaM6aJsE8i\u002ftWXjv55Owj9wzsThK+PCP5p8IfWiesM\u002fI4axW3gNxD80V8MyfZrRPwAAAAAAAPh\u002fWYtGoc6mqj8QhPfn7Q+nP\u002fQpI0\u002fM76Q\u002fmYE6mjFXqj+F4XWx52qoP0zoucA7GYA\u002f5Dj69sz4tj\u002fD0pFP\u002fTLBv3EKQnPlZtG\u002fEeIwwue66z9e7z7Iua\u002fqPw40AwNWtuM\u002f3AjUQVtf3T8GLCqpdsfGP0kO\u002fSWT9M8\u002fNpdTIAy13j8AAAAAAADwPw4SBSsem+M\u002fzTp\u002fgKGatL\u002fdjkrQvcCjv1M1LYr0uMC\u002f22+nQKdQpL8MOz\u002ftRAu7v17W7z\u002f0U8A\u002fOdFVZ5HD07\u002fNOn+AoZq0v7c39nvyreI\u002f59vseLxKvb8vTcVOVL\u002fGvyUMoVUA7bE\u002fCNFZqIgAxr+mtisz86+sP\u002fdkdRyuKbc\u002fHj7AtZF9y79CHKlpSaLPPy19Ude6wM8\u002fW1lrkxEd0D9Ok8StykLQPy5gQsO\u002fqcM\u002fAAAAAAAA+H9Psb1GmEW8P4BkjXLbhr0\u002fAcBGovpRvD\u002fs5SKMYnS+P\u002fiDsO\u002fadL0\u002fkQWn\u002fo77oD+tIVBipqbLP16CeFoQrak\u002fqcSZ6rMfv7+sF+Td5mjlP0MbSNpQ8OY\u002fE3pLongn1z\u002fSFM\u002fMqdjRP7UtezWZ+Lo\u002fF6FZGW9Cwz999fJRNQPSPw4SBSsem+M\u002fAAAAAAAA8D+oqLWowge8PzqWoBWDKMA\u002fPNQP7JEntT8I98K2FL20P0P+e23t2LO\u002fnzPYpHtgzj93Xw+irfTUv6iotajCB7w\u002fqswDHQez0z8HfzVeKca7v9l7FYkOoci\u002fPH7e0Ye4qD+o9+ys\u002fIXCv+5LtQgrBq8\u002foWxeh00kwD82waxIrrjXP1IVCkvFEe4\u002fDqDF3qkI7j9fKtQtEu7tP6uSsks34+0\u002fEirgKymv378AAAAAAAD4fwDZH\u002frXMJe\u002futStHWt64T9q4VG4NpnhP0rTwPlDP+E\u002f\u002fMFgLhJc4T+p+cY89YHXP0yUu00w7+4\u002fKh28goi57z+WTD5inZ7uPzxxaUXOw6Y\u002fB\u002fHAudywwT\u002fnBoAseZi8v1gviQhmbsS\u002fNxxmNRtZu799uMd8L\u002f3Cv1r3auzi4M2\u002fzTp\u002fgKGatL+oqLWowge8PwAAAAAAAPA\u002f53aeu9167z+jJbexayHvP7zJXZbV9Og\u002fQMUPV5JP4j8g\u002fcfeOUzuP5PVmnvma+I\u002fAAAAAAAA8D9dezBLwQ+0v0A0dmolYeI\u002fINwrFFYY2D+1SamUr2WiP+MLhL4\u002f7r4\u002f04u2TRqOsr9PFMGwPUSuP1pm6Ko1\u002ftc\u002f62R7KSMD7j9h7lPawgvuPwcAcaxEze0\u002fVHLZtV7Y7T8L6tfHWhfbvwAAAAAAAPh\u002fRL9nnedvk7+h0g932GPhPz66duAlh+E\u002f\u002fWuGzxMl4T8Lj+uZY0fhP3HVyRUhFdk\u002f5FYrMVrD7j9\u002fYvvaAkjvPwd0SD+MIu4\u002fhGGolxuisj\u002faw9HEuszDP\u002feuYRMmxrS\u002f0MQZ6Kwuwr8XRSA2\u002fAG5vw0h0yY+PsG\u002fSziypMmEyb\u002fdjkrQvcCjvzqWoBWDKMA\u002f53aeu9167z8AAAAAAADwPwJtAONbS+0\u002fUa2EMUGX6j\u002f\u002fsJhLQi3iP0T3d0+FNu4\u002fyl\u002fw5W8S4j\u002fndp673XrvP00Cdd7b+Km\u002fpiObIwk14j\u002fnG0RdYDfYP0ydV+4xmqs\u002f75r8YoWSwT805v0MoBSzv+5dvqevhbA\u002fvwV6ZcY61j8IpxmBLbLsP68SX2Olkuw\u002f4oyM3Z+n7D\u002fDblbn+oDsP4mfciV3CuK\u002fAAAAAAAA+H9IClZrMuqav+8dToUwwOA\u002fr9WE9bDX4D\u002f5RiuMi4zgP6CLTEvdoOA\u002fKJ+UrHlY1D+jgZtkmKrtP0uhXZ0Oxe4\u002fssRC6VnF7T8wrcHwZMN3Pzj+CMKQPbw\u002fACTb3wSnwr+c2KcIClnGv08gU0OzDL2\u002fpMujbYpTxL+GZWYZ9QfRv1M1LYr0uMC\u002fPNQP7JEntT+jJbexayHvPwJtAONbS+0\u002fAAAAAAAA8D\u002fGPk4a16XlP67j3Ok4muE\u002fqVN0VPDy7D+31Cn9TPzhP6Ilt7FrIe8\u002fsvqtKC44vL\u002fZjdKrlbfhP9Aio6F0x9Y\u002fUx69gNiRhj\u002fgqsd1JAK4P6YRNsMK\u002fLC\u002fN0M7cGQ6qT\u002fr+UXZplDSP6Jyn4FTbOc\u002fFSgI7nSy5z8DY75QGOfmPxz4Dz6JQuc\u002fMIvgDxMTxb8AAAAAAAD4f5Ha\u002ffEeyIu\u002fOb8OUPCO2D8RZPHO2SPZP0nr180myNc\u002f\u002fpxOlfFn2D+mgHc3KDbdPzxRUvMhH+g\u002fYZa8Dycv6T\u002fyRew\u002fLNboP531lP5beZe\u002f4xmwjQRVoT+Es4sgYp+5v\u002f+WsgqAYMG\u002fTx4m9V1ysb\u002fuUOYZ9Ya4v67iiHsYTcW\u002f22+nQKdQpL8I98K2FL20P7zJXZbV9Og\u002fUa2EMUGX6j\u002fGPk4a16XlPwAAAAAAAPA\u002fAysWIqdA2T88NEixAJPnPzBvUdvTn9k\u002fu8ldltX06D+fdocrt2qRv3+UjZgfZdg\u002fp5Lozffp0T+X1dyUfFCgP9WcJmOB1cQ\u002fkHUVdG9jsL\u002fxSxD8MNGgP99ILGOV0+0\u002fNraakTie4T9y5sq6y5rhP4nXX60pweE\u002fvcOTn+Sv4T+hVZNHVlfUvwAAAAAAAPh\u002ffbOPxsJXpL\u002fXnXzTX63nP2DfEbIMxec\u002f3AAxFTys5z9PtdKRdLXnP2YwjBrQ1Nw\u002fD27MfKjd4T\u002fU+euf4lLiP7S8LX9DxOI\u002fGsqPtKnmhD96VbGVEmiOP1Eys\u002f\u002foK5a\u002fKM2oQKQwqb9N4NSal5qhv\u002f\u002fP1My3OKm\u002f1Ythd6hgtr8MOz\u002ftRAu7v0P+e23t2LO\u002fQMUPV5JP4j\u002f\u002fsJhLQi3iP67j3Ok4muE\u002fAysWIqdA2T8AAAAAAADwP0sC3mOXsOE\u002f0gj3bzzJ7D8\u002fxQ9Xkk\u002fiP7yghcPP9Is\u002fkxt8VHOf7j\u002fnSryp4TXuP4\u002fhQ0Tf+MM\u002fJLgVIXdCxT8UfYfXvA2lv8TrHxu5fai\u002fV+co2JOE1T8MWkNkIdvvP6I1Wsamzu8\u002fti9r29rG7z90yFcVurDvP6lww4X7zdy\u002fAAAAAAAA+H+cm3bFoJqLv29NiigOZOI\u002fJSL\u002fqqRx4j873ix2NTjiP70iW+0hQuI\u002f8ED903VJ2D\u002f506\u002fSktbvP\u002fa\u002fxYWEU+4\u002fhCTJOO9d7D9TTWSJTWPTP72qFmZIedU\u002fuc\u002fxsh18wD+hi2HCmUanP3JOylN7trm\u002fBW1mHHeYtr\u002fYJsOHPwyNv17W7z\u002f0U8A\u002fnzPYpHtgzj8g\u002fcfeOUzuP0T3d0+FNu4\u002fqVN0VPDy7D88NEixAJPnP0sC3mOXsOE\u002fAAAAAAAA8D9LmRLNw07gPyL9x945TO4\u002fHeI+gR7fvz9Jktc30tfhP9xJWlEo9dU\u002fL41zNAeasD8Yj4quSfSyP6jIdSkxza6\u002fiEa\u002fmbzMtD\u002f3r\u002fyt\u002fhfrP2h9k59PGeA\u002f+KRVKgUW4D9+sNswICrgP2ExqBQ+FOA\u002fI+cgTY1Y2L8AAAAAAAD4fzovVIQudKW\u002fIreCjEMx4D8d+f1M2FPgP\u002f\u002ffApROIuA\u002fopyB8D814D+h89rKq2zTP9isWym2seA\u002fyS8AuFPe4j+m\u002f8LedizlP\u002fLMmHy0k8m\u002fRkQ1uG8Oyr9WUEhkcy\u002fBv9KpYq53SsK\u002f7XLbs+Q6s7+N\u002frAf9Fy7v3see7Hejsi\u002fOdFVZ5HD0793Xw+irfTUv5PVmnvma+I\u002fyl\u002fw5W8S4j+31Cn9TPzhPzBvUdvTn9k\u002f0gj3bzzJ7D9LmRLNw07gPwAAAAAAAPA\u002fkdWae+Zr4j9SH+MEySjAv++Ezomlq+0\u002f1UyqnNbZ6j\u002fVWBFB9vy2P3hTu6uHt8U\u002fuWGRBbHus7\u002f\u002fQ5j4jymwvzbBrEiuuNc\u002fUhUKS8UR7j8OoMXeqQjuP18q1C0S7u0\u002fq5KySzfj7T8SKuArKa\u002ffvwAAAAAAAPh\u002fANkf+tcwl7+61K0da3rhP2rhUbg2meE\u002fStPA+UM\u002f4T\u002f8wWAuElzhP6n5xjz1gdc\u002fTJS7TTDv7j8qHbyCiLnvP5ZMPmKdnu4\u002fPHFpRc7Dpj8H8cC53LDBP+cGgCx5mLy\u002fWC+JCGZuxL83HGY1G1m7v324x3wv\u002fcK\u002fWvdq7OLgzb\u002fNOn+AoZq0v6iotajCB7w\u002fAAAAAAAA8D\u002fndp673XrvP6Ilt7FrIe8\u002fu8ldltX06D8\u002fxQ9Xkk\u002fiPyL9x945TO4\u002fkdWae+Zr4j8AAAAAAADwP117MEvBD7S\u002fQDR2aiVh4j8g3CsUVhjYP7VJqZSvZaI\u002f4wuEvj\u002fuvj\u002fTi7ZNGo6yv08UwbA9RK4\u002fnNom4\u002fRGtb8hg17h1bLBPxArakDG28I\u002fCpHP+VJuwz9MWqFUorjEP0uMDWHJQMw\u002fAAAAAAAA+H\u002f7AQxCGBKUPzlllq7yhaw\u002fiNI36CFdrD\u002f3wJDM9wiwP6K+mZOMCLA\u002fU3MycJ+LsD+ndRnh3hK3PzUhnmd7yLO\u002fQhohjipPwr9KY672frbjPz6O1+4OrN8\u002ffpcw1FKB5D\u002fXzrIWXSniP9YvNUc+6Mk\u002f+3Uttwgm0j\u002fLSWbGKA7gP7c39nvyreI\u002fqswDHQez0z9dezBLwQ+0v00Cdd7b+Km\u002fsvqtKC44vL+fdocrt2qRv7yghcPP9Is\u002fHeI+gR7fvz9SH+MEySjAv117MEvBD7S\u002fAAAAAAAA8D9nyUcXhiOEP9vjIsw+lLK\u002fEbBDToBtpj9Ibm0X+hm5vw2uFKBI7KM\u002f6q3HvSiMpj+rwwyq3VnsP8JWH1Arx+E\u002fSCLBaGjD4T+Sd6bI4OvhPz6n8Ra01uE\u002fdNHQxbRk1L8AAAAAAAD4f+arVfWCHqO\u002f\u002fCK5Op484z+4oNSINVPjPzHpci9OO+M\u002fy4wltUdC4z8nnsXzTCjWPxi1uZ7eBeI\u002fZdQbjsR34j8SIxd1vg3jP57JDirkx4s\u002fZUAdnY0ClD9\u002fiwkz4defv5gRlHwsvLC\u002fbshQhw9Bor80Q0jJPZmqv1nMbrTsUbi\u002f59vseLxKvb8HfzVeKca7v0A0dmolYeI\u002fpiObIwk14j\u002fZjdKrlbfhP3+UjZgfZdg\u002fkxt8VHOf7j9Jktc30tfhP++Ezomlq+0\u002fQDR2aiVh4j9nyUcXhiOEPwAAAAAAAPA\u002fluuUy49E7D88C+p99CTAP0T8miCAvb8\u002fnOKnz21orr\u002fFwyGvZUSmv1Nb4oFm5O8\u002fOIkQpoW\u002f1T8kag89DsHVP3ZzpKBY5tU\u002fusi5VlXO1T\u002f8F89rCO3KvwAAAAAAAPh\u002f7F+9omZ7pL9kPRUwZFLnP4Sp\u002fHLKb+c\u002fj0NReJFO5z8WaGh2Wl7nP6Z6lg7eTt0\u002frWGRiINl1j805KyBTrvYP0fG7rD2Jts\u002fwVjBpq\u002fpub9z6+mim1u7v5aiW9Ima7e\u002f0Yqpunn5ub+Yf2LRDNqjv9dj2fQvIay\u002fvcr8r1Wfub8vTcVOVL\u002fGv9l7FYkOoci\u002fINwrFFYY2D\u002fnG0RdYDfYP9Aio6F0x9Y\u002fp5Lozffp0T\u002fnSryp4TXuP9xJWlEo9dU\u002f1UyqnNbZ6j8g3CsUVhjYP9vjIsw+lLK\u002fluuUy49E7D8AAAAAAADwP1PNo3zMGsY\u002ffynZ+znIyj8UwfVV76Shvytj9CCYGrS\u002fo2knTvjaxT9Pdt35JTuyPzIIjIXNk7I\u002fR1MhRQj2sT8ePsWFoJWyP+9\u002fYU45R6c\u002fAAAAAAAA+H9OJfcLKZJ7v59JeSsU88Y\u002f6NNYcirvxj8v0iduwRrHP4kgZpS2E8c\u002fwBwI+9H2wj+Z4nVnNr6tPydQpwHkRKM\u002f+bxK+iAImz+nh+SE\u002fiizP9qS9DXmAas\u002fz6w6RC4btT\u002fLgK0KnNGyP+r38aJaGrA\u002fvSrR2sTvsT9gqxmyhfu2PyUMoVUA7bE\u002fPH7e0Ye4qD+1SamUr2WiP0ydV+4xmqs\u002fUx69gNiRhj+X1dyUfFCgP4\u002fhQ0Tf+MM\u002fL41zNAeasD\u002fVWBFB9vy2P7VJqZSvZaI\u002fEbBDToBtpj88C+p99CTAP1PNo3zMGsY\u002fAAAAAAAA8D\u002fVWn3y+jiUv6NV13WvxEW\u002fSNlb5+3brz+LvrltvkTMPzLm4Z4edLE\u002fvT1vRsHDsT8vRzbuUbKwPzqO25tsYLE\u002fDcN9Fi0UZz8AAAAAAAD4f7GMMEJFZoW\u002fToRHaxwMwT9xNkQMxHLBP0rN4FXc7sA\u002fDeiZiDsvwT+SD03XSDbGP17y3EhBAbU\u002fxO8qWfgdwj9akkTLlerGP1NZu7Qflsy\u002fcCFsdZUgzb8GyFol3Ce+vxTqgOA55bq\u002fmsF\u002fSu+9pb9JZzVQiy6ov6SpZWMqRra\u002fCNFZqIgAxr+o9+ys\u002fIXCv+MLhL4\u002f7r4\u002f75r8YoWSwT\u002fgqsd1JAK4P9WcJmOB1cQ\u002fJLgVIXdCxT8Yj4quSfSyP3hTu6uHt8U\u002f4wuEvj\u002fuvj9Ibm0X+hm5v0T8miCAvb8\u002ffynZ+znIyj\u002fVWn3y+jiUvwAAAAAAAPA\u002fCbR4\u002fAZkob9AP+3xGzyQv\u002fVjZ3y9KKW\u002ftQZaPk0frr8JbKZZMg+uvzirM1RtBq6\u002fFukVnNrarL9aJ93G1PukPwAAAAAAAPh\u002f\u002fCxNZ92Vi7+avxfJXf58P6UTeFyGZXs\u002fbM0TD8MEgD+SVUqcf\u002fyBP0e39b3PAo4\u002f\u002fU73jnylrr8D4g8NzcuzvyJtj3I2h7e\u002fMnUQbuv5rz98EbFLlZqwP7bk4pflxqU\u002fXHM3sA6klT85hy++oqihP60QI+b0MIo\u002fd0zOXClKHT+mtisz86+sP+5LtQgrBq8\u002f04u2TRqOsr805v0MoBSzv6YRNsMK\u002fLC\u002fkHUVdG9jsL8UfYfXvA2lv6jIdSkxza6\u002fuWGRBbHus7\u002fTi7ZNGo6yvw2uFKBI7KM\u002fnOKnz21orr8UwfVV76Shv6NV13WvxEW\u002fCbR4\u002fAZkob8AAAAAAADwP5jFq9BPjYW\u002f4iybSXHUtL8+tAPEeb+1P+\u002ftoarZJrY\u002fYSFSqiM0tj8t1f0OfJS2P8K73xEOZJ+\u002fAAAAAAAA+H8HuKPepQdBvxf5hahH7Js\u002fvzUEo0RenD+tk8378\u002fidPw6YOsNmGJ4\u002fDSlv+BIPn7\u002frUFerpoO0P6vBcW+Z0Ks\u002faXunzd5PnD\u002f7EU2Mp6m7PyUvOQqZCr0\u002fSpjSAzdqsj8Wlxah\u002fdawP+Xz\u002fZ5gZqQ\u002fMqQiqWqLlz+\u002ff6A9YxmsP\u002fdkdRyuKbc\u002foWxeh00kwD9PFMGwPUSuP+5dvqevhbA\u002fN0M7cGQ6qT\u002fxSxD8MNGgP8TrHxu5fai\u002fiEa\u002fmbzMtD\u002f\u002fQ5j4jymwv08UwbA9RK4\u002f6q3HvSiMpj\u002fFwyGvZUSmvytj9CCYGrS\u002fSNlb5+3brz9AP+3xGzyQv5jFq9BPjYW\u002fAAAAAAAA8D8=","shape":"40, 40"},"type":"heatmap","xaxis":"x","yaxis":"y","hovertemplate":"x: %{x}\u003cbr\u003ey: %{y}\u003cbr\u003eCorrelation: %{z}\u003cextra\u003e\u003c\u002fextra\u003e"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"},"margin":{"b":0,"l":0,"r":0,"t":30}}},"xaxis":{"anchor":"y","domain":[0.0,1.0],"scaleanchor":"y","constrain":"domain","linewidth":1,"linecolor":"black","mirror":true,"ticks":"inside","showline":true},"yaxis":{"anchor":"x","domain":[0.0,1.0],"autorange":"reversed","constrain":"domain","linewidth":1,"linecolor":"black","mirror":true,"ticks":"inside","showline":true},"coloraxis":{"colorbar":{"title":{"text":"Correlation","font":{"size":14}},"tickfont":{"size":12},"x":0.75,"thickness":15},"colorscale":[[0.0,"rgb(103,0,31)"],[0.1,"rgb(178,24,43)"],[0.2,"rgb(214,96,77)"],[0.3,"rgb(244,165,130)"],[0.4,"rgb(253,219,199)"],[0.5,"rgb(247,247,247)"],[0.6,"rgb(209,229,240)"],[0.7,"rgb(146,197,222)"],[0.8,"rgb(67,147,195)"],[0.9,"rgb(33,102,172)"],[1.0,"rgb(5,48,97)"]]},"title":{}},                        {"responsive": true}                    ).then(function(){
+                            
+var gd = document.getElementById('8f36d21c-36b3-4bd6-9d30-b3c7b8ff2f70');
+var x = new MutationObserver(function (mutations, observer) {{
+        var display = window.getComputedStyle(gd).display;
+        if (!display || display === 'none') {{
+            console.log([gd, 'removed!']);
+            Plotly.purge(gd);
+            observer.disconnect();
+        }}
+}});
+
+// Listen for the removal of the full notebook cells
+var notebookContainer = gd.closest('#notebook-container');
+if (notebookContainer) {{
+    x.observe(notebookContainer, {childList: true});
+}}
+
+// Listen for the clearing of the current output cell
+var outputEl = gd.closest('.output');
+if (outputEl) {{
+    x.observe(outputEl, {childList: true});
+}}
+
+                        })                };            </script>        </div>
+</div>
+</div>
+</section>
+<section id="tesla-volatility-with-bollinger-bands-atr-reddit-sentiment-april-2025" class="level2">
+<h2 class="anchored" data-anchor-id="tesla-volatility-with-bollinger-bands-atr-reddit-sentiment-april-2025">🔍 <strong>Tesla Volatility with Bollinger Bands, ATR &amp; Reddit Sentiment (April 2025)</strong></h2>
+<p>This multi-panel chart integrates <strong>price candlesticks</strong> with <strong>Bollinger Bands</strong>, <strong>ATR</strong>, and <strong>Reddit sentiment</strong>.</p>
+<ul>
+<li>Tesla’s bounce from the <strong>lower band</strong> in early April reflects a textbook <strong>volatility rebound</strong>.</li>
+<li>Elevated <strong>ATR</strong> and <strong>volume</strong> around <strong>April 9</strong> indicate market stress, potentially linked to <strong>earnings or macroeconomic developments</strong>.</li>
+<li><strong>Reddit sentiment</strong> trails the actual price action, suggesting that while <strong>social signals are useful</strong>, they are most effective when interpreted alongside <strong>traditional technical metrics</strong>.</li>
+</ul>
+<div id="1cd689c5" class="cell" data-execution_count="2">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> logging</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>logging.getLogger(<span class="st">'matplotlib.font_manager'</span>).setLevel(logging.ERROR)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> mplfinance <span class="im">as</span> mpf</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.read_csv(<span class="st">"final_data.csv"</span>)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>df[<span class="st">'Date'</span>] <span class="op">=</span> pd.to_datetime(df[<span class="st">'Date'</span>])</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> df.tail(<span class="dv">30</span>)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>df_candle <span class="op">=</span> df[[<span class="st">'Date'</span>, <span class="st">'Open'</span>, <span class="st">'High'</span>, <span class="st">'Low'</span>, <span class="st">'Close'</span>, <span class="st">'Volume'</span>]].copy()</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>df_candle.set_index(<span class="st">'Date'</span>, inplace<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>custom_style <span class="op">=</span> mpf.make_mpf_style(</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    base_mpf_style<span class="op">=</span><span class="st">'classic'</span>,</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    rc<span class="op">=</span>{</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>        <span class="st">'font.family'</span>: <span class="st">'Times New Roman'</span>,</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>        <span class="st">'axes.labelsize'</span>: <span class="dv">13</span>,</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>        <span class="st">'xtick.labelsize'</span>: <span class="dv">11</span>,</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>        <span class="st">'ytick.labelsize'</span>: <span class="dv">11</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>    },</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>    marketcolors<span class="op">=</span>mpf.make_marketcolors(</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>        up<span class="op">=</span><span class="st">'#2ca02c'</span>,</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>        down<span class="op">=</span><span class="st">'#d62728'</span>,</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>        edge<span class="op">=</span><span class="st">'inherit'</span>,</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>        wick<span class="op">=</span><span class="st">'gray'</span>,</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>        volume<span class="op">=</span><span class="st">'lightblue'</span></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>    gridcolor<span class="op">=</span><span class="st">'lightgray'</span>,</span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>    gridstyle<span class="op">=</span><span class="st">'--'</span>,</span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>    facecolor<span class="op">=</span><span class="st">'white'</span>,</span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>    figcolor<span class="op">=</span><span class="st">'white'</span></span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>apds <span class="op">=</span> [</span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>    mpf.make_addplot(df[<span class="st">'Bollinger_Upper_Band'</span>], color<span class="op">=</span><span class="st">'darkgreen'</span>, linestyle<span class="op">=</span><span class="st">'--'</span>, width<span class="op">=</span><span class="fl">1.2</span>),</span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>    mpf.make_addplot(df[<span class="st">'Bollinger_Lower_Band'</span>], color<span class="op">=</span><span class="st">'darkred'</span>, linestyle<span class="op">=</span><span class="st">'--'</span>, width<span class="op">=</span><span class="fl">1.2</span>),</span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>    mpf.make_addplot(df[<span class="st">'ATR'</span>], panel<span class="op">=</span><span class="dv">1</span>, color<span class="op">=</span><span class="st">'purple'</span>, width<span class="op">=</span><span class="fl">1.3</span>, ylabel<span class="op">=</span><span class="st">'ATR'</span>),</span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>    mpf.make_addplot(df[<span class="st">'reddit_sentiment'</span>], panel<span class="op">=</span><span class="dv">2</span>, color<span class="op">=</span><span class="st">'navy'</span>, width<span class="op">=</span><span class="fl">1.3</span>, ylabel<span class="op">=</span><span class="st">'Reddit Sentiment'</span>)</span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> mpf.plot(</span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>    df_candle,</span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a>    <span class="bu">type</span><span class="op">=</span><span class="st">'candle'</span>,</span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>    style<span class="op">=</span>custom_style,</span>
+<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a>    volume<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a>    addplot<span class="op">=</span>apds,</span>
+<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a>    ylabel<span class="op">=</span><span class="st">'Price ($)'</span>,</span>
+<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a>    ylabel_lower<span class="op">=</span><span class="st">'Volume'</span>,</span>
+<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a>    panel_ratios<span class="op">=</span>(<span class="dv">3</span>, <span class="dv">1</span>, <span class="dv">1</span>),</span>
+<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a>    figratio<span class="op">=</span>(<span class="dv">16</span>, <span class="dv">9</span>),</span>
+<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a>    figscale<span class="op">=</span><span class="fl">1.5</span>,</span>
+<span id="cb2-53"><a href="#cb2-53" aria-hidden="true" tabindex="-1"></a>    returnfig<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb2-54"><a href="#cb2-54" aria-hidden="true" tabindex="-1"></a>    datetime_format<span class="op">=</span><span class="st">'%b </span><span class="sc">%d</span><span class="st">'</span></span>
+<span id="cb2-55"><a href="#cb2-55" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb2-56"><a href="#cb2-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-57"><a href="#cb2-57" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].text(</span>
+<span id="cb2-58"><a href="#cb2-58" aria-hidden="true" tabindex="-1"></a>    <span class="fl">0.5</span>, <span class="fl">0.95</span>,</span>
+<span id="cb2-59"><a href="#cb2-59" aria-hidden="true" tabindex="-1"></a>    <span class="st">'Tesla Volatility with Bollinger Bands, ATR &amp; Reddit Sentiment'</span>,</span>
+<span id="cb2-60"><a href="#cb2-60" aria-hidden="true" tabindex="-1"></a>    transform<span class="op">=</span>axes[<span class="dv">0</span>].transAxes,</span>
+<span id="cb2-61"><a href="#cb2-61" aria-hidden="true" tabindex="-1"></a>    fontsize<span class="op">=</span><span class="dv">14</span>,</span>
+<span id="cb2-62"><a href="#cb2-62" aria-hidden="true" tabindex="-1"></a>    fontweight<span class="op">=</span><span class="st">'bold'</span>,</span>
+<span id="cb2-63"><a href="#cb2-63" aria-hidden="true" tabindex="-1"></a>    fontfamily<span class="op">=</span><span class="st">'Times New Roman'</span>,</span>
+<span id="cb2-64"><a href="#cb2-64" aria-hidden="true" tabindex="-1"></a>    verticalalignment<span class="op">=</span><span class="st">'top'</span>,</span>
+<span id="cb2-65"><a href="#cb2-65" aria-hidden="true" tabindex="-1"></a>    horizontalalignment<span class="op">=</span><span class="st">'center'</span></span>
+<span id="cb2-66"><a href="#cb2-66" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb2-67"><a href="#cb2-67" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="exploratory-analysis_files/figure-html/cell-3-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="tesla-return-and-nyt-sentiment-march-2427-2025" class="level2">
+<h2 class="anchored" data-anchor-id="tesla-return-and-nyt-sentiment-march-2427-2025">🔍 <strong>Tesla: Return %, and NYT Sentiment (March 24–27, 2025)</strong></h2>
+<p>This multi-panel chart combines <strong>Tesla’s daily candlestick prices</strong> with <strong>return percentages</strong> and <strong>New York Times sentiment scores</strong>.</p>
+<ul>
+<li><strong>March 24</strong> shows a strong <strong>upward reversal</strong>, with green candlesticks and rising returns aligning with a slightly negative <strong>NYT sentiment</strong>.</li>
+<li>A <strong>positive return</strong> on <strong>March 25</strong> coincides with improving sentiment, while <strong>March 26</strong> sees both <strong>sentiment and return drop sharply</strong>.</li>
+<li>By <strong>March 27</strong>, despite <strong>neutral price movement</strong>, sentiment plunges—highlighting a potential <strong>disconnect between news tone and market behavior</strong>.</li>
+<li>This suggests <strong>sentiment shifts may lag or diverge</strong> from short-term price dynamics.</li>
+</ul>
+<div id="2299786b" class="cell" data-execution_count="3">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.dates <span class="im">as</span> mdates</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> matplotlib.patches <span class="im">import</span> Rectangle</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.read_csv(<span class="st">"final_data.csv"</span>)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>df.columns <span class="op">=</span> df.columns.<span class="bu">str</span>.strip()</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>df[<span class="st">'Date'</span>] <span class="op">=</span> pd.to_datetime(df[<span class="st">'Date'</span>])</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>start_date <span class="op">=</span> pd.to_datetime(<span class="st">"2025-03-24"</span>)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>end_date <span class="op">=</span> start_date <span class="op">+</span> pd.Timedelta(days<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>march_df <span class="op">=</span> df[(df[<span class="st">'Date'</span>] <span class="op">&gt;=</span> start_date) <span class="op">&amp;</span> (df[<span class="st">'Date'</span>] <span class="op">&lt;=</span> end_date)].copy()</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>march_df[<span class="st">'Daily_Return_%'</span>] <span class="op">=</span> march_df[<span class="st">'Close'</span>].pct_change() <span class="op">*</span> <span class="dv">100</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>fig, (ax1, ax2, ax3) <span class="op">=</span> plt.subplots(<span class="dv">3</span>, <span class="dv">1</span>, figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">10</span>), sharex<span class="op">=</span><span class="va">True</span>, gridspec_kw<span class="op">=</span>{<span class="st">'height_ratios'</span>: [<span class="dv">3</span>, <span class="dv">1</span>, <span class="dv">1</span>]})</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="co"># --- Candlestick Plot ---</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> _, row <span class="kw">in</span> march_df.iterrows():</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    date_num <span class="op">=</span> mdates.date2num(row[<span class="st">'Date'</span>])</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    color <span class="op">=</span> <span class="st">'green'</span> <span class="cf">if</span> row[<span class="st">'Close'</span>] <span class="op">&gt;=</span> row[<span class="st">'Open'</span>] <span class="cf">else</span> <span class="st">'red'</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Wick</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>    ax1.plot([row[<span class="st">'Date'</span>], row[<span class="st">'Date'</span>]], [row[<span class="st">'Low'</span>], row[<span class="st">'High'</span>]], color<span class="op">=</span><span class="st">'black'</span>)</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Body</span></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>    rect <span class="op">=</span> Rectangle((date_num <span class="op">-</span> <span class="fl">0.2</span>, <span class="bu">min</span>(row[<span class="st">'Open'</span>], row[<span class="st">'Close'</span>])),</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>                     <span class="fl">0.4</span>,</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>                     <span class="bu">abs</span>(row[<span class="st">'Close'</span>] <span class="op">-</span> row[<span class="st">'Open'</span>]),</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>                     color<span class="op">=</span>color)</span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>    ax1.add_patch(rect)</span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>ax1.set_ylabel(<span class="st">"Price ($)"</span>)</span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>ax1.set_title(<span class="st">"Tesla: Return %, and NYT Sentiment (March 24–27, 2025)"</span>)</span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>ax1.grid(<span class="va">True</span>)</span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a><span class="co"># --- Daily Return Plot ---</span></span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>ax2.bar(march_df[<span class="st">'Date'</span>], march_df[<span class="st">'Daily_Return_%'</span>], color<span class="op">=</span><span class="st">'skyblue'</span>)</span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>ax2.axhline(<span class="dv">0</span>, color<span class="op">=</span><span class="st">'black'</span>, linestyle<span class="op">=</span><span class="st">'--'</span>)</span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>ax2.set_ylabel(<span class="st">"Return (%)"</span>)</span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>ax2.grid(<span class="va">True</span>)</span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a><span class="co"># --- FinBERT Sentiment Plot ---</span></span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a>ax3.plot(march_df[<span class="st">'Date'</span>], march_df[<span class="st">'nyt_sentiment'</span>], marker<span class="op">=</span><span class="st">'o'</span>, linestyle<span class="op">=</span><span class="st">'--'</span>, color<span class="op">=</span><span class="st">'red'</span>)</span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>ax3.set_ylabel(<span class="st">"NEW YORK TIME Sentiment"</span>)</span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a>ax3.set_xlabel(<span class="st">"Date"</span>)</span>
+<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a>ax3.grid(<span class="va">True</span>)</span>
+<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a>ax3.xaxis.set_major_formatter(mdates.DateFormatter(<span class="st">'%b </span><span class="sc">%d</span><span class="st">'</span>))</span>
+<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a>fig.autofmt_xdate()</span>
+<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="exploratory-analysis_files/figure-html/cell-4-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="nyt-sentiment-vs.-macd-indicator-20242025" class="level2">
+<h2 class="anchored" data-anchor-id="nyt-sentiment-vs.-macd-indicator-20242025">🔍 <strong>NYT Sentiment vs.&nbsp;MACD Indicator (2024–2025)</strong></h2>
+<p>This dual-axis time series chart compares smoothed <strong>New York Times sentiment scores</strong> against <strong>Tesla’s MACD indicator</strong>.</p>
+<ul>
+<li>A moderate positive correlation (<strong>0.38</strong>) is observed, especially during major events such as <strong>Q1 2025’s market dip and recovery</strong>.</li>
+<li>While sentiment occasionally aligns with trend shifts, it often <strong>lags behind technical indicators</strong>, implying that <strong>news sentiment alone may not be a reliable standalone signal</strong> but can add explanatory value when combined with technical data.</li>
+</ul>
+<div id="899176e4" class="cell" data-execution_count="4">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> logging</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> plotly.graph_objects <span class="im">as</span> go</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>logging.getLogger(<span class="st">'matplotlib.font_manager'</span>).setLevel(logging.ERROR)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>pd.options.mode.chained_assignment <span class="op">=</span> <span class="va">None</span>  <span class="co"># &lt;--- This suppresses the SettingWithCopyWarning</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> pd.read_csv(<span class="st">'final_data.csv'</span>, parse_dates<span class="op">=</span>[<span class="st">'Date'</span>])</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>data.sort_values(<span class="st">'Date'</span>, inplace<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>one_year_data <span class="op">=</span> data[data[<span class="st">'Date'</span>] <span class="op">&gt;=</span> (data[<span class="st">'Date'</span>].<span class="bu">max</span>() <span class="op">-</span> pd.DateOffset(years<span class="op">=</span><span class="dv">1</span>))].copy()</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>one_year_data.loc[:, <span class="st">'nyt_sentiment_smooth'</span>] <span class="op">=</span> one_year_data[<span class="st">'nyt_sentiment'</span>].rolling(window<span class="op">=</span><span class="dv">7</span>).mean()</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>one_year_data.loc[:, <span class="st">'macd_smooth'</span>] <span class="op">=</span> one_year_data[<span class="st">'MACD'</span>].rolling(window<span class="op">=</span><span class="dv">7</span>).mean()</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>correlation <span class="op">=</span> one_year_data[[<span class="st">'nyt_sentiment_smooth'</span>, <span class="st">'macd_smooth'</span>]].corr().iloc[<span class="dv">0</span>, <span class="dv">1</span>]</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="co"># --- Visualization ---</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> go.Figure()</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>fig.add_trace(go.Scatter(</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>    x<span class="op">=</span>one_year_data[<span class="st">'Date'</span>], </span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>    y<span class="op">=</span>one_year_data[<span class="st">'nyt_sentiment_smooth'</span>], </span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>    mode<span class="op">=</span><span class="st">'lines'</span>, </span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=</span><span class="st">'NYT Sentiment (Smoothed)'</span>, </span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>    line<span class="op">=</span><span class="bu">dict</span>(color<span class="op">=</span><span class="st">'blue'</span>)</span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>))</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>fig.add_trace(go.Scatter(</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>    x<span class="op">=</span>one_year_data[<span class="st">'Date'</span>], </span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>    y<span class="op">=</span>one_year_data[<span class="st">'macd_smooth'</span>], </span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>    mode<span class="op">=</span><span class="st">'lines'</span>, </span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=</span><span class="st">'MACD (Smoothed)'</span>, </span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>    line<span class="op">=</span><span class="bu">dict</span>(color<span class="op">=</span><span class="st">'green'</span>),</span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>    yaxis<span class="op">=</span><span class="st">'y2'</span></span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>))</span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>fig.update_layout(</span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>    title<span class="op">=</span><span class="ss">f"NYT Sentiment vs. MACD Over the Last Year (Correlation: </span><span class="sc">{</span>correlation<span class="sc">:.2f}</span><span class="ss">)"</span>,</span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>    xaxis_title<span class="op">=</span><span class="st">"Date"</span>,</span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>    yaxis_title<span class="op">=</span><span class="st">"NYT Sentiment"</span>,</span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>    yaxis2<span class="op">=</span><span class="bu">dict</span>(title<span class="op">=</span><span class="st">"MACD"</span>, overlaying<span class="op">=</span><span class="st">'y'</span>, side<span class="op">=</span><span class="st">'right'</span>),</span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>    legend_title<span class="op">=</span><span class="st">"Metrics"</span>,</span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>    template<span class="op">=</span><span class="st">"plotly_white"</span></span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a>fig.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>            <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_SVG"></script><script type="text/javascript">if (window.MathJax && window.MathJax.Hub && window.MathJax.Hub.Config) {window.MathJax.Hub.Config({SVG: {font: "STIX-Web"}});}</script>                <script type="text/javascript">window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
+        <script charset="utf-8" src="https://cdn.plot.ly/plotly-3.0.1.min.js"></script>                <div id="60420251-5513-4dd8-9544-a8b2ce468a5b" class="plotly-graph-div" style="height:525px; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("60420251-5513-4dd8-9544-a8b2ce468a5b")) {                    Plotly.newPlot(                        "60420251-5513-4dd8-9544-a8b2ce468a5b",                        [{"line":{"color":"blue"},"mode":"lines","name":"NYT Sentiment (Smoothed)","x":["2024-05-07T00:00:00.000000000","2024-05-08T00:00:00.000000000","2024-05-09T00:00:00.000000000","2024-05-10T00:00:00.000000000","2024-05-13T00:00:00.000000000","2024-05-14T00:00:00.000000000","2024-05-15T00:00:00.000000000","2024-05-16T00:00:00.000000000","2024-05-17T00:00:00.000000000","2024-05-20T00:00:00.000000000","2024-05-21T00:00:00.000000000","2024-05-22T00:00:00.000000000","2024-05-23T00:00:00.000000000","2024-05-24T00:00:00.000000000","2024-05-28T00:00:00.000000000","2024-05-29T00:00:00.000000000","2024-05-30T00:00:00.000000000","2024-05-31T00:00:00.000000000","2024-06-03T00:00:00.000000000","2024-06-04T00:00:00.000000000","2024-06-05T00:00:00.000000000","2024-06-06T00:00:00.000000000","2024-06-07T00:00:00.000000000","2024-06-10T00:00:00.000000000","2024-06-11T00:00:00.000000000","2024-06-12T00:00:00.000000000","2024-06-13T00:00:00.000000000","2024-06-14T00:00:00.000000000","2024-06-17T00:00:00.000000000","2024-06-18T00:00:00.000000000","2024-06-20T00:00:00.000000000","2024-06-21T00:00:00.000000000","2024-06-24T00:00:00.000000000","2024-06-25T00:00:00.000000000","2024-06-26T00:00:00.000000000","2024-06-27T00:00:00.000000000","2024-06-28T00:00:00.000000000","2024-07-01T00:00:00.000000000","2024-07-02T00:00:00.000000000","2024-07-03T00:00:00.000000000","2024-07-05T00:00:00.000000000","2024-07-08T00:00:00.000000000","2024-07-09T00:00:00.000000000","2024-07-10T00:00:00.000000000","2024-07-11T00:00:00.000000000","2024-07-12T00:00:00.000000000","2024-07-15T00:00:00.000000000","2024-07-16T00:00:00.000000000","2024-07-17T00:00:00.000000000","2024-07-18T00:00:00.000000000","2024-07-19T00:00:00.000000000","2024-07-22T00:00:00.000000000","2024-07-23T00:00:00.000000000","2024-07-24T00:00:00.000000000","2024-07-25T00:00:00.000000000","2024-07-26T00:00:00.000000000","2024-07-29T00:00:00.000000000","2024-07-30T00:00:00.000000000","2024-07-31T00:00:00.000000000","2024-08-01T00:00:00.000000000","2024-08-02T00:00:00.000000000","2024-08-05T00:00:00.000000000","2024-08-06T00:00:00.000000000","2024-08-07T00:00:00.000000000","2024-08-08T00:00:00.000000000","2024-08-09T00:00:00.000000000","2024-08-12T00:00:00.000000000","2024-08-13T00:00:00.000000000","2024-08-14T00:00:00.000000000","2024-08-15T00:00:00.000000000","2024-08-16T00:00:00.000000000","2024-08-19T00:00:00.000000000","2024-08-20T00:00:00.000000000","2024-08-21T00:00:00.000000000","2024-08-22T00:00:00.000000000","2024-08-23T00:00:00.000000000","2024-08-26T00:00:00.000000000","2024-08-27T00:00:00.000000000","2024-08-28T00:00:00.000000000","2024-08-29T00:00:00.000000000","2024-08-30T00:00:00.000000000","2024-09-03T00:00:00.000000000","2024-09-04T00:00:00.000000000","2024-09-05T00:00:00.000000000","2024-09-06T00:00:00.000000000","2024-09-09T00:00:00.000000000","2024-09-10T00:00:00.000000000","2024-09-11T00:00:00.000000000","2024-09-12T00:00:00.000000000","2024-09-13T00:00:00.000000000","2024-09-16T00:00:00.000000000","2024-09-17T00:00:00.000000000","2024-09-18T00:00:00.000000000","2024-09-19T00:00:00.000000000","2024-09-20T00:00:00.000000000","2024-09-23T00:00:00.000000000","2024-09-24T00:00:00.000000000","2024-09-25T00:00:00.000000000","2024-09-26T00:00:00.000000000","2024-09-27T00:00:00.000000000","2024-09-30T00:00:00.000000000","2024-10-01T00:00:00.000000000","2024-10-02T00:00:00.000000000","2024-10-03T00:00:00.000000000","2024-10-04T00:00:00.000000000","2024-10-07T00:00:00.000000000","2024-10-08T00:00:00.000000000","2024-10-09T00:00:00.000000000","2024-10-10T00:00:00.000000000","2024-10-11T00:00:00.000000000","2024-10-14T00:00:00.000000000","2024-10-15T00:00:00.000000000","2024-10-16T00:00:00.000000000","2024-10-17T00:00:00.000000000","2024-10-18T00:00:00.000000000","2024-10-21T00:00:00.000000000","2024-10-22T00:00:00.000000000","2024-10-23T00:00:00.000000000","2024-10-24T00:00:00.000000000","2024-10-25T00:00:00.000000000","2024-10-28T00:00:00.000000000","2024-10-29T00:00:00.000000000","2024-10-30T00:00:00.000000000","2024-10-31T00:00:00.000000000","2024-11-01T00:00:00.000000000","2024-11-04T00:00:00.000000000","2024-11-05T00:00:00.000000000","2024-11-06T00:00:00.000000000","2024-11-07T00:00:00.000000000","2024-11-08T00:00:00.000000000","2024-11-11T00:00:00.000000000","2024-11-12T00:00:00.000000000","2024-11-13T00:00:00.000000000","2024-11-14T00:00:00.000000000","2024-11-15T00:00:00.000000000","2024-11-18T00:00:00.000000000","2024-11-19T00:00:00.000000000","2024-11-20T00:00:00.000000000","2024-11-21T00:00:00.000000000","2024-11-22T00:00:00.000000000","2024-11-25T00:00:00.000000000","2024-11-26T00:00:00.000000000","2024-11-27T00:00:00.000000000","2024-11-29T00:00:00.000000000","2024-12-02T00:00:00.000000000","2024-12-03T00:00:00.000000000","2024-12-04T00:00:00.000000000","2024-12-05T00:00:00.000000000","2024-12-06T00:00:00.000000000","2024-12-09T00:00:00.000000000","2024-12-10T00:00:00.000000000","2024-12-11T00:00:00.000000000","2024-12-12T00:00:00.000000000","2024-12-13T00:00:00.000000000","2024-12-16T00:00:00.000000000","2024-12-17T00:00:00.000000000","2024-12-18T00:00:00.000000000","2024-12-19T00:00:00.000000000","2024-12-20T00:00:00.000000000","2024-12-23T00:00:00.000000000","2024-12-24T00:00:00.000000000","2024-12-26T00:00:00.000000000","2024-12-27T00:00:00.000000000","2024-12-30T00:00:00.000000000","2024-12-31T00:00:00.000000000","2025-01-02T00:00:00.000000000","2025-01-03T00:00:00.000000000","2025-01-06T00:00:00.000000000","2025-01-07T00:00:00.000000000","2025-01-08T00:00:00.000000000","2025-01-10T00:00:00.000000000","2025-01-13T00:00:00.000000000","2025-01-14T00:00:00.000000000","2025-01-15T00:00:00.000000000","2025-01-16T00:00:00.000000000","2025-01-17T00:00:00.000000000","2025-01-21T00:00:00.000000000","2025-01-22T00:00:00.000000000","2025-01-23T00:00:00.000000000","2025-01-24T00:00:00.000000000","2025-01-27T00:00:00.000000000","2025-01-28T00:00:00.000000000","2025-01-29T00:00:00.000000000","2025-01-30T00:00:00.000000000","2025-01-31T00:00:00.000000000","2025-02-03T00:00:00.000000000","2025-02-04T00:00:00.000000000","2025-02-05T00:00:00.000000000","2025-02-06T00:00:00.000000000","2025-02-07T00:00:00.000000000","2025-02-10T00:00:00.000000000","2025-02-11T00:00:00.000000000","2025-02-12T00:00:00.000000000","2025-02-13T00:00:00.000000000","2025-02-14T00:00:00.000000000","2025-02-18T00:00:00.000000000","2025-02-19T00:00:00.000000000","2025-02-20T00:00:00.000000000","2025-02-21T00:00:00.000000000","2025-02-24T00:00:00.000000000","2025-02-25T00:00:00.000000000","2025-02-26T00:00:00.000000000","2025-02-27T00:00:00.000000000","2025-02-28T00:00:00.000000000","2025-03-03T00:00:00.000000000","2025-03-04T00:00:00.000000000","2025-03-05T00:00:00.000000000","2025-03-06T00:00:00.000000000","2025-03-07T00:00:00.000000000","2025-03-10T00:00:00.000000000","2025-03-11T00:00:00.000000000","2025-03-12T00:00:00.000000000","2025-03-13T00:00:00.000000000","2025-03-14T00:00:00.000000000","2025-03-17T00:00:00.000000000","2025-03-18T00:00:00.000000000","2025-03-19T00:00:00.000000000","2025-03-20T00:00:00.000000000","2025-03-21T00:00:00.000000000","2025-03-24T00:00:00.000000000","2025-03-25T00:00:00.000000000","2025-03-26T00:00:00.000000000","2025-03-27T00:00:00.000000000","2025-03-28T00:00:00.000000000","2025-03-31T00:00:00.000000000","2025-04-01T00:00:00.000000000","2025-04-02T00:00:00.000000000","2025-04-03T00:00:00.000000000","2025-04-04T00:00:00.000000000","2025-04-07T00:00:00.000000000","2025-04-08T00:00:00.000000000","2025-04-09T00:00:00.000000000","2025-04-10T00:00:00.000000000","2025-04-11T00:00:00.000000000","2025-04-14T00:00:00.000000000","2025-04-15T00:00:00.000000000","2025-04-16T00:00:00.000000000","2025-04-17T00:00:00.000000000","2025-04-21T00:00:00.000000000","2025-04-22T00:00:00.000000000","2025-04-23T00:00:00.000000000","2025-04-24T00:00:00.000000000","2025-04-25T00:00:00.000000000","2025-04-28T00:00:00.000000000","2025-04-29T00:00:00.000000000","2025-04-30T00:00:00.000000000","2025-05-01T00:00:00.000000000","2025-05-02T00:00:00.000000000","2025-05-05T00:00:00.000000000","2025-05-06T00:00:00.000000000","2025-05-07T00:00:00.000000000"],"y":{"dtype":"f8","bdata":"AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fiW65uXZlhj8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACzZFGXCu2rv3YuCn7aJqi\u002fdi4KftomqL9rjjJgjAeZv+tTitxRX5W\u002fEm7mEksLWb8SbuYSSwtZv0Ixuj6wJKs\u002fBvtyJYBepz8G+3IlgF6nP4snBK\u002fXdpc\u002fAJF++zpwrj8X7p1Tze2gv9Lsnjws1Go\u002fm6YMXQu3uT+bpgxdC7e5P5umDF0Lt7k\u002f55NW\u002frmpyT9JbeLkfofEP24PPlMt5c0\u002fNRhkTWk+yT8zgaCfaJy5PzOBoJ9onLk\u002fM4Ggn2icuT8AAAAAAAAAAJHXxITVmZ0\u002fkdfEhNWZnT9HfVXtGBrCP0d9Ve0YGsI\u002fuHdONbeDxz+4d041t4PHP7h3TjW3g8c\u002fxty1hHzQwz\u002fG3LWEfNDDP1mrY4IH87Q\u002fWatjggfztD\u002frEr6jMUO\u002fP+oSvqMxQ78\u002f5gPYGTcLxT95+8fXtRHMP0uTgECRVbk\u002fqXzbDzcljD9C7qivqh2jP8LW5oHMD56\u002fwtbmgcwPnr+JKr\u002fLiqSMP3WTGARWDsG\u002fGzwLwAJXlz9yPCF4vbbHP1KXCu1bK8k\u002fy2tiwurMrj8QBP1E40ySPy+v4tL0mLa\u002fOR5k17komD+BeRWXpseUv3M6T7rwQsy\u002fjYwSNVNe0L+LNDJK1EzBvzV0cgRsxre\u002frjEpwLTpur9XyxsjmOi\u002fv7D3oVAS0b2\u002fkTvqq2rHoL9ObWw1aRa3vyqScrb+WaK\u002fsb\u002fsnjwspD+hfWul03myP2XW0MkRsJm\u002fIqQtLHvRvL8ipC0se9G8v1do31rpdJ6\u002fCb8Z+BDShr\u002fP4LLJXx22v8\u002fgsslfHba\u002fW5NmccJDhj\u002f1QOYH7y25Py4WwxY99Mo\u002fqWMPb9rNrj9NOHKgRp+Cv5cAet3h9KG\u002flwB63eH0ob+XAHrd4fShv5cAet3h9KG\u002f+3T3PSvrm7\u002fBIoIwNQW5PzFVMCqpE7g\u002f7r5nZX0HsD\u002fuvmdlfQewP+6+Z2V9B7A\u002fn\u002fkaRZXfxT+Vya2K8gmqP5XJrYryCao\u002fj+s36U9zwD9doWOc1sHOPxD7WFaxTMQ\u002fadZDYionuD+XWdCOLkmYv5dZ0I4uSZi\u002fl1nQji5JmL+5CM0w8vO5v5XrqoFo6sq\u002fhViOZv4ps79WIqAWGMmyv3Pd+8PAoa+\u002f7gGiNkMCbL+KYLyOYueVvy3vUhQWhLS\u002fDknGwua1sj\u002ff3SIGUyWgP\u002ftG43pCHsM\u002fRxQwU+vTuz\u002f3\u002fxnPzhGjv5FT57yvdp8\u002fx7NzxIjstT8FzI\u002fSf+mnPysclTDqrqE\u002fIFv8FVzaaL8ZeByu\u002f6GovxnzyzYJNqQ\u002fMgiVZIhMlT82833JnACjPxXoQek1pKG\u002fn3U9fW+8r7+tDyzJPgmyv8ZAguLHmIs\u002fJrn8h\u002fTbsz+Z9DShy9i5P+dKAL3ucMI\u002fq+WNEUz0wz8m2D5it47DP00g6CcaZ8I\u002fEFkiE68wzD959IIOOA6zP1cUo+sDS4I\u002fIfwNF\u002frip7\u002fLnhcBKFmRPwKTw1EgW6g\u002fApPDUSBbqD8OoEq2Zpadv4+HEsK6Rbk\u002f46GEsG5RvT\u002fioYSwblG9P4a2yrsUhbU\u002fL+Rpz\u002f6YwD+CeotddArEP77a\u002fZV+bs8\u002fQOk1pPmNyT\u002frWP3nAu\u002fQP+tY\u002fecC79A\u002fJ3ACJ3ACyz8r71IUFoTQP81kkJGFQMQ\u002f11i+7Yebkr+vDP4Tc2Syv5\u002fneZ7neca\u002foNTvmFNa079JCdR1u3HTv9cEaK\u002fTX9m\u002fVtNJS\u002fyl1L+4QoIQODzPvwWU2iCqRMa\u002fb8Xn+qnaur9F946vVGuWP1cQo48jBJO\u002f5x2QMHcWsb9\u002fHSGvclGxv4oOq6aTlrC\u002fzpfSN6pVmL9TnWZX83S0v43kxK8uQLO\u002f97ZN3u1nfj8HKOOx97jEP9brmPd5DsU\u002ftuWK+k76wj\u002f7I5NCKPS8P+kex20t\u002f7s\u002fr4GfELXdvz9W2WlDeY+2Pyn1s8rJFqy\u002fb5PKJYbfs7\u002fxdM4ZpASsv2K906EUL6+\u002fSpokAVOyn7\u002fdB3grklSVv1qPUZIvNKA\u002fKCYtaXyfvT+Qq4kA9djEP93\u002fD8YyhsA\u002f09UzZwbCvT+paOxcSe27P\u002f65wLsuVKw\u002fhmC8jmLnrb9yU8KRAzXEv0tvCQJXwsi\u002faieqkkxtyL+pDpvgYBDEv+7Fdz0cQ8e\u002fKMN4vJhru7\u002fMSW6Bz9Owv1Omfd497KA\u002f4qwMySKUpD\u002fYmQZ1GxayP1lj6J2rQ7I\u002fQTHmeTQFuD+yW12V6W6RPz1dCW54spg\u002fowG\u002fl4W2pr9F2POGvvulv1CDJ4I8faO\u002fEq+U\u002fjcZwL9AQxcaPZbDv1oZWsLVzrO\u002fcDk7AmRTo79iTcg1rT6lv2NgrhuIvb6\u002f06UUizMbx7+an8eTjbPEv34vq51On8u\u002fCaTXeS7m0L8ZWQhE4J7Xv62yBkOyl9m\u002f2xVOZz472b9Zph7n+ZLbv94MN+Dzw9q\u002f5Si+nQNJ1b+ZgOGZEWDVv2pAgMvhVtC\u002fp93sUM+\u002fxr8AWclJZcvEv9f7UCiJ6JY\u002fMijXVQPRpD8yKNdVA9GkPzIo11UD0aQ\u002fd\u002fVrbR7IrD8vYl7FpemhPzbuT+ZguLc\u002fAAAAAAAAAAAAAAAAAAAAAA=="},"type":"scatter"},{"line":{"color":"green"},"mode":"lines","name":"MACD (Smoothed)","x":["2024-05-07T00:00:00.000000000","2024-05-08T00:00:00.000000000","2024-05-09T00:00:00.000000000","2024-05-10T00:00:00.000000000","2024-05-13T00:00:00.000000000","2024-05-14T00:00:00.000000000","2024-05-15T00:00:00.000000000","2024-05-16T00:00:00.000000000","2024-05-17T00:00:00.000000000","2024-05-20T00:00:00.000000000","2024-05-21T00:00:00.000000000","2024-05-22T00:00:00.000000000","2024-05-23T00:00:00.000000000","2024-05-24T00:00:00.000000000","2024-05-28T00:00:00.000000000","2024-05-29T00:00:00.000000000","2024-05-30T00:00:00.000000000","2024-05-31T00:00:00.000000000","2024-06-03T00:00:00.000000000","2024-06-04T00:00:00.000000000","2024-06-05T00:00:00.000000000","2024-06-06T00:00:00.000000000","2024-06-07T00:00:00.000000000","2024-06-10T00:00:00.000000000","2024-06-11T00:00:00.000000000","2024-06-12T00:00:00.000000000","2024-06-13T00:00:00.000000000","2024-06-14T00:00:00.000000000","2024-06-17T00:00:00.000000000","2024-06-18T00:00:00.000000000","2024-06-20T00:00:00.000000000","2024-06-21T00:00:00.000000000","2024-06-24T00:00:00.000000000","2024-06-25T00:00:00.000000000","2024-06-26T00:00:00.000000000","2024-06-27T00:00:00.000000000","2024-06-28T00:00:00.000000000","2024-07-01T00:00:00.000000000","2024-07-02T00:00:00.000000000","2024-07-03T00:00:00.000000000","2024-07-05T00:00:00.000000000","2024-07-08T00:00:00.000000000","2024-07-09T00:00:00.000000000","2024-07-10T00:00:00.000000000","2024-07-11T00:00:00.000000000","2024-07-12T00:00:00.000000000","2024-07-15T00:00:00.000000000","2024-07-16T00:00:00.000000000","2024-07-17T00:00:00.000000000","2024-07-18T00:00:00.000000000","2024-07-19T00:00:00.000000000","2024-07-22T00:00:00.000000000","2024-07-23T00:00:00.000000000","2024-07-24T00:00:00.000000000","2024-07-25T00:00:00.000000000","2024-07-26T00:00:00.000000000","2024-07-29T00:00:00.000000000","2024-07-30T00:00:00.000000000","2024-07-31T00:00:00.000000000","2024-08-01T00:00:00.000000000","2024-08-02T00:00:00.000000000","2024-08-05T00:00:00.000000000","2024-08-06T00:00:00.000000000","2024-08-07T00:00:00.000000000","2024-08-08T00:00:00.000000000","2024-08-09T00:00:00.000000000","2024-08-12T00:00:00.000000000","2024-08-13T00:00:00.000000000","2024-08-14T00:00:00.000000000","2024-08-15T00:00:00.000000000","2024-08-16T00:00:00.000000000","2024-08-19T00:00:00.000000000","2024-08-20T00:00:00.000000000","2024-08-21T00:00:00.000000000","2024-08-22T00:00:00.000000000","2024-08-23T00:00:00.000000000","2024-08-26T00:00:00.000000000","2024-08-27T00:00:00.000000000","2024-08-28T00:00:00.000000000","2024-08-29T00:00:00.000000000","2024-08-30T00:00:00.000000000","2024-09-03T00:00:00.000000000","2024-09-04T00:00:00.000000000","2024-09-05T00:00:00.000000000","2024-09-06T00:00:00.000000000","2024-09-09T00:00:00.000000000","2024-09-10T00:00:00.000000000","2024-09-11T00:00:00.000000000","2024-09-12T00:00:00.000000000","2024-09-13T00:00:00.000000000","2024-09-16T00:00:00.000000000","2024-09-17T00:00:00.000000000","2024-09-18T00:00:00.000000000","2024-09-19T00:00:00.000000000","2024-09-20T00:00:00.000000000","2024-09-23T00:00:00.000000000","2024-09-24T00:00:00.000000000","2024-09-25T00:00:00.000000000","2024-09-26T00:00:00.000000000","2024-09-27T00:00:00.000000000","2024-09-30T00:00:00.000000000","2024-10-01T00:00:00.000000000","2024-10-02T00:00:00.000000000","2024-10-03T00:00:00.000000000","2024-10-04T00:00:00.000000000","2024-10-07T00:00:00.000000000","2024-10-08T00:00:00.000000000","2024-10-09T00:00:00.000000000","2024-10-10T00:00:00.000000000","2024-10-11T00:00:00.000000000","2024-10-14T00:00:00.000000000","2024-10-15T00:00:00.000000000","2024-10-16T00:00:00.000000000","2024-10-17T00:00:00.000000000","2024-10-18T00:00:00.000000000","2024-10-21T00:00:00.000000000","2024-10-22T00:00:00.000000000","2024-10-23T00:00:00.000000000","2024-10-24T00:00:00.000000000","2024-10-25T00:00:00.000000000","2024-10-28T00:00:00.000000000","2024-10-29T00:00:00.000000000","2024-10-30T00:00:00.000000000","2024-10-31T00:00:00.000000000","2024-11-01T00:00:00.000000000","2024-11-04T00:00:00.000000000","2024-11-05T00:00:00.000000000","2024-11-06T00:00:00.000000000","2024-11-07T00:00:00.000000000","2024-11-08T00:00:00.000000000","2024-11-11T00:00:00.000000000","2024-11-12T00:00:00.000000000","2024-11-13T00:00:00.000000000","2024-11-14T00:00:00.000000000","2024-11-15T00:00:00.000000000","2024-11-18T00:00:00.000000000","2024-11-19T00:00:00.000000000","2024-11-20T00:00:00.000000000","2024-11-21T00:00:00.000000000","2024-11-22T00:00:00.000000000","2024-11-25T00:00:00.000000000","2024-11-26T00:00:00.000000000","2024-11-27T00:00:00.000000000","2024-11-29T00:00:00.000000000","2024-12-02T00:00:00.000000000","2024-12-03T00:00:00.000000000","2024-12-04T00:00:00.000000000","2024-12-05T00:00:00.000000000","2024-12-06T00:00:00.000000000","2024-12-09T00:00:00.000000000","2024-12-10T00:00:00.000000000","2024-12-11T00:00:00.000000000","2024-12-12T00:00:00.000000000","2024-12-13T00:00:00.000000000","2024-12-16T00:00:00.000000000","2024-12-17T00:00:00.000000000","2024-12-18T00:00:00.000000000","2024-12-19T00:00:00.000000000","2024-12-20T00:00:00.000000000","2024-12-23T00:00:00.000000000","2024-12-24T00:00:00.000000000","2024-12-26T00:00:00.000000000","2024-12-27T00:00:00.000000000","2024-12-30T00:00:00.000000000","2024-12-31T00:00:00.000000000","2025-01-02T00:00:00.000000000","2025-01-03T00:00:00.000000000","2025-01-06T00:00:00.000000000","2025-01-07T00:00:00.000000000","2025-01-08T00:00:00.000000000","2025-01-10T00:00:00.000000000","2025-01-13T00:00:00.000000000","2025-01-14T00:00:00.000000000","2025-01-15T00:00:00.000000000","2025-01-16T00:00:00.000000000","2025-01-17T00:00:00.000000000","2025-01-21T00:00:00.000000000","2025-01-22T00:00:00.000000000","2025-01-23T00:00:00.000000000","2025-01-24T00:00:00.000000000","2025-01-27T00:00:00.000000000","2025-01-28T00:00:00.000000000","2025-01-29T00:00:00.000000000","2025-01-30T00:00:00.000000000","2025-01-31T00:00:00.000000000","2025-02-03T00:00:00.000000000","2025-02-04T00:00:00.000000000","2025-02-05T00:00:00.000000000","2025-02-06T00:00:00.000000000","2025-02-07T00:00:00.000000000","2025-02-10T00:00:00.000000000","2025-02-11T00:00:00.000000000","2025-02-12T00:00:00.000000000","2025-02-13T00:00:00.000000000","2025-02-14T00:00:00.000000000","2025-02-18T00:00:00.000000000","2025-02-19T00:00:00.000000000","2025-02-20T00:00:00.000000000","2025-02-21T00:00:00.000000000","2025-02-24T00:00:00.000000000","2025-02-25T00:00:00.000000000","2025-02-26T00:00:00.000000000","2025-02-27T00:00:00.000000000","2025-02-28T00:00:00.000000000","2025-03-03T00:00:00.000000000","2025-03-04T00:00:00.000000000","2025-03-05T00:00:00.000000000","2025-03-06T00:00:00.000000000","2025-03-07T00:00:00.000000000","2025-03-10T00:00:00.000000000","2025-03-11T00:00:00.000000000","2025-03-12T00:00:00.000000000","2025-03-13T00:00:00.000000000","2025-03-14T00:00:00.000000000","2025-03-17T00:00:00.000000000","2025-03-18T00:00:00.000000000","2025-03-19T00:00:00.000000000","2025-03-20T00:00:00.000000000","2025-03-21T00:00:00.000000000","2025-03-24T00:00:00.000000000","2025-03-25T00:00:00.000000000","2025-03-26T00:00:00.000000000","2025-03-27T00:00:00.000000000","2025-03-28T00:00:00.000000000","2025-03-31T00:00:00.000000000","2025-04-01T00:00:00.000000000","2025-04-02T00:00:00.000000000","2025-04-03T00:00:00.000000000","2025-04-04T00:00:00.000000000","2025-04-07T00:00:00.000000000","2025-04-08T00:00:00.000000000","2025-04-09T00:00:00.000000000","2025-04-10T00:00:00.000000000","2025-04-11T00:00:00.000000000","2025-04-14T00:00:00.000000000","2025-04-15T00:00:00.000000000","2025-04-16T00:00:00.000000000","2025-04-17T00:00:00.000000000","2025-04-21T00:00:00.000000000","2025-04-22T00:00:00.000000000","2025-04-23T00:00:00.000000000","2025-04-24T00:00:00.000000000","2025-04-25T00:00:00.000000000","2025-04-28T00:00:00.000000000","2025-04-29T00:00:00.000000000","2025-04-30T00:00:00.000000000","2025-05-01T00:00:00.000000000","2025-05-02T00:00:00.000000000","2025-05-05T00:00:00.000000000","2025-05-06T00:00:00.000000000","2025-05-07T00:00:00.000000000"],"y":{"dtype":"f8","bdata":"AAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fJSABXX\u002fg\u002fT+AvbN1+UL6P272MfIhofc\u002fyVzPt1vX9T+SrynrQX\u002f3P0nZYhyEBvo\u002fNyt3qdsD+z9b2K2Nl3D8P24aRKyJlP0\u002fgFTbMbHn\u002fT9u9rNB14T+P+7n+QI7Gf0\u002fJYt\u002fCCb1+j+3YVYjLCn5P+5QkCt5sfY\u002fbuAaAuW39D+StjSXjivzP5KsuB640\u002fA\u002fSQCaRaPk6j+S\u002fhMAf6flP244x4VpHOQ\u002fJZOZHjTF4z9JB+haFb7mPwCOup\u002fVgOs\u002f7rgbruLg8D+AARoHRGP1P6W18dI5pPk\u002fyYtoCWKS\u002fT93LnG6tdQBQAB2Cv1Y7ARAAPrh7mhLCEBJIT2d+zwNQO59KUKrlhJAYPBvrThlGECFUQi4j5cfQIfMfQJ8uSNAxYerdp4OKEB7vuRS5KosQDCGNtTrVDBAuMRwBIPnMUAVa8d+7gAzQDsXnRSutDNAD2o77BD7M0B7zb7ys9EzQM\u002fI76FIMTNA22EDcy6aMkDCPtMkIegxQFsgDKR3vTBAtxQIPmlxLkAL330H+A8rQAASE+kDtydAOayt7q9xJEDngXYYlzQhQGBjKeImmRtAwMtDiySRFUARBB8STj4PQBJs4GAY0wNAAFN9hP7l6z9JaiGSrlzlv2W2Rukc2gHAgLXDYYk3DcBFtXKkA+MSwJLcGNbW6BXAezJWzadpF8C3oaSXkzYXwLuOe+sqtBXAzsKwcuFPE8AOlIzt\u002fAoQwHcR2x3zVgrA7uhhWI3PA8A3n3qx7Bv9v8mdxLgSzfW\u002fABYgxdTr8r8AIOzrySbzvwBBO\u002futyPS\u002fSVFexkDW9b9botxWOpT2vzcV3JmJz\u002fO\u002fW+cE4Ywj8b8AMGPDN93pv5LIKMPJcte\u002fkWTGXNRmwj9Jha2h4VfoPxIA9x4zwPU\u002fSQ\u002fmlspj\u002fD8lDUAoTzICQBI9JfTrHgZAru67jL6PCkCARYJGHqkOQAChq5qFrhFArhBOXWVqFEB7VihqDrQXQIX8tCXRNRtAElWMrO8pH0AgVU8vVFshQOfa674GACNA529E73sMJECrMPfS6VQkQBcz8v7ZKSRAaRm0Zil\u002fI0Dui\u002feobWMiQNUy56dn1yBAifdPSlv\u002fHUBXxNn3WFgZQI6gqIhibhRApvyKiVHqDUBuaonHRzgDQMkRsrX57\u002fA\u002fkByrVl2Azr+Snbfblqj3v8lqv9wOdAPApQw7GxC1CcC3NjIdnZUKwID3IR\u002f7mgbA7qzA2Szf\u002fr\u002fdZdcpMWrov7U+PCjvOOM\u002fEk2ZxVY0AEBJlwS65SsMQImat+IdzxFAEmSHqc+2E0A3DVj9CCsWQGn4tUriihlAxdM3bCvMHkC1oGfXgpAjQNcu9PHfaihAfmWzm\u002fXuLUA9bo5xRKMxQN1YJexz5TNA2csanm\u002fqNUCFQT371Yc3QHnRM0\u002fTbzhAQshZLtL+OECi7w6rDGc5QJk0cAaRvjlArs4ncxzrOUDgqzyTVLE5QNUMi5WnNjlApXOyZ+u4OECQFCbFpjA4QLC0pMT7jjdAEjAbBb0lN0Beb3g6giQ3QJvFhUMHhjdAFySry64wOEBy12lAQzU5QKAoJvxoejpALt1L1VYQPECZECFMXQ0+QJCHDih3JkBAFQX8KkAiQUAzziJn2ehBQM2rlCLJSkJAPcl+k2J0QkC5WqQJI4VCQKdiRYNDT0JAKt3Hm1SpQUArObzGqNJAQHW6X3h2lD9AEqqVLRkgPUA5gyaCAaQ6QIl1VPJ2zjdAx1U\u002fPTKiNEAA+zBEe34xQNvj57Y7Jy1ApYir5ck8KEDXxYOJxn8kQODn983qvSFAQKDMCZjiHkCS3qCQNWUcQLcS7UXtchtAQM3FxrtSG0CS6tQtpFMbQO5v44PkextALe+m7qzgGUCADky8cJsXQEntreu+2hNA20CzQAw1D0CS9VVahTsHQAAjmNjZNPw\u002f2+JIyl3r5T8AsConqo3Yv9uA\u002fYtlzPe\u002f25e0SeEvBcD3KCjlr14QwJIOAO+KLRjA+2KIl8EVIMDpkC7R8NsjwNcizsNGGSfA12Z63pLVKcDlrfheDrUrwO5jbxZ5xizA6ec8FnoSLcByH9j6GRwtwDJhFunGBC7AwGrcUP3eL8AAxm8vSk0xwJLKJqIG8jLAa\u002fXi8uDPNMCntFMfZck2wGLfP6QEqTjAAI5dlKVLOsA+SBHt+5g7wMv9HqsX\u002fDzAOcSx2MtzPsCHWlwx+Ks\u002fwK3YMvLRT0DAdw4kHSqqQMDAJHZhcOVAwKuJi0AVGUHAWbb7OKr7QMAlykUCyapAwIJNfp7jOUDA58Xfhy\u002f2PsC7sFoekAE9wDc6WO5gwTrAJruvMmMkOMChcosBCYE1wHnq15pe7jLAygTXN3l5MMAbfXLw358swCnpCA63YinA8m4u0WpNJ8BFAkTyEFAmwCXYTF26OybAx3sjX9ieJcDbhe33j0IlwHV7LO3nbSXA4oxUxnWoJcAydRsrf0ElwM5yeviegiTAx8rS9mY\u002fI8DwbDZC1A4jwDv0QqBeBSPATmkaoqDPIsAyZ46v3UQiwKlrdHbo7iDAEoXNqN9dHcCpf1XQgDIXwG15erIlNw\u002fAkv\u002f5Ww4t\u002fr9J1rYNY7XAP6WCHrJyIP8\u002f2wv2KtviCUDlPV7mKGYQQA=="},"yaxis":"y2","type":"scatter"}],                        {"template":{"data":{"barpolar":[{"marker":{"line":{"color":"white","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"white","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"#C8D4E3","linecolor":"#C8D4E3","minorgridcolor":"#C8D4E3","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"#C8D4E3","linecolor":"#C8D4E3","minorgridcolor":"#C8D4E3","startlinecolor":"#2a3f5f"},"type":"carpet"}],"choropleth":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"choropleth"}],"contourcarpet":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"contourcarpet"}],"contour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"contour"}],"heatmap":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmap"}],"histogram2dcontour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2dcontour"}],"histogram2d":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2d"}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"mesh3d":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"mesh3d"}],"parcoords":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"parcoords"}],"pie":[{"automargin":true,"type":"pie"}],"scatter3d":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatter3d"}],"scattercarpet":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattercarpet"}],"scattergeo":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergeo"}],"scattergl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergl"}],"scattermapbox":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermapbox"}],"scattermap":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermap"}],"scatterpolargl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolargl"}],"scatterpolar":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolar"}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"scatterternary":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterternary"}],"surface":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"surface"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}]},"layout":{"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"autotypenumbers":"strict","coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]],"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]},"colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"geo":{"bgcolor":"white","lakecolor":"white","landcolor":"white","showlakes":true,"showland":true,"subunitcolor":"#C8D4E3"},"hoverlabel":{"align":"left"},"hovermode":"closest","mapbox":{"style":"light"},"margin":{"b":0,"l":0,"r":0,"t":30},"paper_bgcolor":"white","plot_bgcolor":"white","polar":{"angularaxis":{"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":""},"bgcolor":"white","radialaxis":{"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":""}},"scene":{"xaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"},"yaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"},"zaxis":{"backgroundcolor":"white","gridcolor":"#DFE8F3","gridwidth":2,"linecolor":"#EBF0F8","showbackground":true,"ticks":"","zerolinecolor":"#EBF0F8"}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"ternary":{"aaxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""},"baxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""},"bgcolor":"white","caxis":{"gridcolor":"#DFE8F3","linecolor":"#A2B1C6","ticks":""}},"title":{"x":0.05},"xaxis":{"automargin":true,"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":"","title":{"standoff":15},"zerolinecolor":"#EBF0F8","zerolinewidth":2},"yaxis":{"automargin":true,"gridcolor":"#EBF0F8","linecolor":"#EBF0F8","ticks":"","title":{"standoff":15},"zerolinecolor":"#EBF0F8","zerolinewidth":2}}},"yaxis2":{"title":{"text":"MACD"},"overlaying":"y","side":"right"},"title":{"text":"NYT Sentiment vs. MACD Over the Last Year (Correlation: 0.38)"},"xaxis":{"title":{"text":"Date"}},"yaxis":{"title":{"text":"NYT Sentiment"}},"legend":{"title":{"text":"Metrics"}}},                        {"responsive": true}                    ).then(function(){
+                            
+var gd = document.getElementById('60420251-5513-4dd8-9544-a8b2ce468a5b');
+var x = new MutationObserver(function (mutations, observer) {{
+        var display = window.getComputedStyle(gd).display;
+        if (!display || display === 'none') {{
+            console.log([gd, 'removed!']);
+            Plotly.purge(gd);
+            observer.disconnect();
+        }}
+}});
+
+// Listen for the removal of the full notebook cells
+var notebookContainer = gd.closest('#notebook-container');
+if (notebookContainer) {{
+    x.observe(notebookContainer, {childList: true});
+}}
+
+// Listen for the clearing of the current output cell
+var outputEl = gd.closest('.output');
+if (outputEl) {{
+    x.observe(outputEl, {childList: true});
+}}
+
+                        })                };            </script>        </div>
+</div>
+</div>
+
+
+<!-- -->
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+    const viewSource = window.document.getElementById('quarto-view-source') ||
+                       window.document.getElementById('quarto-code-tools-source');
+    if (viewSource) {
+      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+      viewSource.addEventListener("click", function(e) {
+        if (sourceUrl) {
+          // rstudio viewer pane
+          if (/\bcapabilities=\b/.test(window.location)) {
+            window.open(sourceUrl);
+          } else {
+            window.location.href = sourceUrl;
+          }
+        } else {
+          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+          modal.show();
+        }
+        return false;
+      });
+    }
+    function toggleCodeHandler(show) {
+      return function(e) {
+        const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+        for (let i=0; i<detailsSrc.length; i++) {
+          const details = detailsSrc[i].parentElement;
+          if (show) {
+            details.open = true;
+          } else {
+            details.removeAttribute("open");
+          }
+        }
+        const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+        const fromCls = show ? "hidden" : "unhidden";
+        const toCls = show ? "unhidden" : "hidden";
+        for (let i=0; i<cellCodeDivs.length; i++) {
+          const codeDiv = cellCodeDivs[i];
+          if (codeDiv.classList.contains(fromCls)) {
+            codeDiv.classList.remove(fromCls);
+            codeDiv.classList.add(toCls);
+          } 
+        }
+        return false;
+      }
+    }
+    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+    if (hideAllCode) {
+      hideAllCode.addEventListener("click", toggleCodeHandler(false));
+    }
+    const showAllCode = window.document.getElementById("quarto-show-all-code");
+    if (showAllCode) {
+      showAllCode.addEventListener("click", toggleCodeHandler(true));
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="sourceCode" id="cb5" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Exploratory Data Analysis"</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span><span class="co"> </span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co">  html:</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co">    code-fold: true</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="co">    code-tools: true</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="fu">## Correlation Matrix Analysis</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>We perform a correlation matrix analysis to understand the relationships between the various features in our dataset.</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="fu">## 🔍 **Feature Correlation Matrix for Market Mood Analysis**</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>This heatmap visualizes the correlation between technical indicators, sentiment scores, and Tesla stock metrics. </span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Strong positive correlations appear among core price indicators (**Open**, **High**, **Low**, **Close**), and within groups like **MACD**, **EMA**, and **ROC**, indicating internal consistency.</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Sentiment features, especially from **Reddit** and news outlets, show minimal correlation with direct price movement, highlighting their weak linear association.</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>This suggests that **non-linear models** or **lag-aware forecasting** might be more suitable for capturing these relationships.</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> plotly.express <span class="im">as</span> px</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.read_csv(<span class="st">"final_data.csv"</span>)</span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="st">'Date'</span> <span class="kw">in</span> df.columns:</span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>    df[<span class="st">'Date'</span>] <span class="op">=</span> pd.to_datetime(df[<span class="st">'Date'</span>])</span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>df_numeric <span class="op">=</span> df.select_dtypes(include<span class="op">=</span>[<span class="st">'float64'</span>, <span class="st">'int64'</span>])</span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>correlation_matrix <span class="op">=</span> df_numeric.corr()</span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> px.imshow(</span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a>    correlation_matrix,</span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>    labels<span class="op">=</span><span class="bu">dict</span>(color<span class="op">=</span><span class="st">"Correlation"</span>),</span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a>    x<span class="op">=</span>correlation_matrix.columns,</span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>    y<span class="op">=</span>correlation_matrix.columns,</span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a>    color_continuous_scale<span class="op">=</span><span class="st">'RdBu'</span></span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a>fig.update_layout(title<span class="op">=</span><span class="va">None</span>)</span>
+<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a>fig.update_layout(</span>
+<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a>    coloraxis_colorbar<span class="op">=</span><span class="bu">dict</span>(</span>
+<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a>        x<span class="op">=</span><span class="fl">0.75</span>,</span>
+<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a>        thickness<span class="op">=</span><span class="dv">15</span>,</span>
+<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a>        title<span class="op">=</span><span class="bu">dict</span>(</span>
+<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a>            text<span class="op">=</span><span class="st">"Correlation"</span>,</span>
+<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a>            font<span class="op">=</span><span class="bu">dict</span>(size<span class="op">=</span><span class="dv">14</span>)  <span class="co"># &lt;-- Corrected property path</span></span>
+<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a>        ),</span>
+<span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a>        tickfont<span class="op">=</span><span class="bu">dict</span>(size<span class="op">=</span><span class="dv">12</span>)</span>
+<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb5-56"><a href="#cb5-56" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-57"><a href="#cb5-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a>fig.update_xaxes(linewidth<span class="op">=</span><span class="dv">1</span>, linecolor<span class="op">=</span><span class="st">'black'</span>, mirror<span class="op">=</span><span class="va">True</span>, ticks<span class="op">=</span><span class="st">'inside'</span>, showline<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb5-59"><a href="#cb5-59" aria-hidden="true" tabindex="-1"></a>fig.update_yaxes(linewidth<span class="op">=</span><span class="dv">1</span>, linecolor<span class="op">=</span><span class="st">'black'</span>, mirror<span class="op">=</span><span class="va">True</span>, ticks<span class="op">=</span><span class="st">'inside'</span>, showline<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb5-60"><a href="#cb5-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-61"><a href="#cb5-61" aria-hidden="true" tabindex="-1"></a>fig.show()</span>
+<span id="cb5-62"><a href="#cb5-62" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb5-63"><a href="#cb5-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-64"><a href="#cb5-64" aria-hidden="true" tabindex="-1"></a><span class="fu">## 🔍 **Tesla Volatility with Bollinger Bands, ATR &amp; Reddit Sentiment (April 2025)**</span></span>
+<span id="cb5-65"><a href="#cb5-65" aria-hidden="true" tabindex="-1"></a>This multi-panel chart integrates **price candlesticks** with **Bollinger Bands**, **ATR**, and **Reddit sentiment**. </span>
+<span id="cb5-66"><a href="#cb5-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-67"><a href="#cb5-67" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Tesla’s bounce from the **lower band** in early April reflects a textbook **volatility rebound**.</span>
+<span id="cb5-68"><a href="#cb5-68" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Elevated **ATR** and **volume** around **April 9** indicate market stress, potentially linked to **earnings or macroeconomic developments**.</span>
+<span id="cb5-69"><a href="#cb5-69" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Reddit sentiment** trails the actual price action, suggesting that while **social signals are useful**, they are most effective when interpreted alongside **traditional technical metrics**.</span>
+<span id="cb5-70"><a href="#cb5-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-71"><a href="#cb5-71" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-74"><a href="#cb5-74" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb5-75"><a href="#cb5-75" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib</span>
+<span id="cb5-76"><a href="#cb5-76" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> logging</span>
+<span id="cb5-77"><a href="#cb5-77" aria-hidden="true" tabindex="-1"></a>logging.getLogger(<span class="st">'matplotlib.font_manager'</span>).setLevel(logging.ERROR)</span>
+<span id="cb5-78"><a href="#cb5-78" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb5-79"><a href="#cb5-79" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> mplfinance <span class="im">as</span> mpf</span>
+<span id="cb5-80"><a href="#cb5-80" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb5-81"><a href="#cb5-81" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-82"><a href="#cb5-82" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.read_csv(<span class="st">"final_data.csv"</span>)</span>
+<span id="cb5-83"><a href="#cb5-83" aria-hidden="true" tabindex="-1"></a>df[<span class="st">'Date'</span>] <span class="op">=</span> pd.to_datetime(df[<span class="st">'Date'</span>])</span>
+<span id="cb5-84"><a href="#cb5-84" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> df.tail(<span class="dv">30</span>)</span>
+<span id="cb5-85"><a href="#cb5-85" aria-hidden="true" tabindex="-1"></a>df_candle <span class="op">=</span> df[[<span class="st">'Date'</span>, <span class="st">'Open'</span>, <span class="st">'High'</span>, <span class="st">'Low'</span>, <span class="st">'Close'</span>, <span class="st">'Volume'</span>]].copy()</span>
+<span id="cb5-86"><a href="#cb5-86" aria-hidden="true" tabindex="-1"></a>df_candle.set_index(<span class="st">'Date'</span>, inplace<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb5-87"><a href="#cb5-87" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-88"><a href="#cb5-88" aria-hidden="true" tabindex="-1"></a>custom_style <span class="op">=</span> mpf.make_mpf_style(</span>
+<span id="cb5-89"><a href="#cb5-89" aria-hidden="true" tabindex="-1"></a>    base_mpf_style<span class="op">=</span><span class="st">'classic'</span>,</span>
+<span id="cb5-90"><a href="#cb5-90" aria-hidden="true" tabindex="-1"></a>    rc<span class="op">=</span>{</span>
+<span id="cb5-91"><a href="#cb5-91" aria-hidden="true" tabindex="-1"></a>        <span class="st">'font.family'</span>: <span class="st">'Times New Roman'</span>,</span>
+<span id="cb5-92"><a href="#cb5-92" aria-hidden="true" tabindex="-1"></a>        <span class="st">'axes.labelsize'</span>: <span class="dv">13</span>,</span>
+<span id="cb5-93"><a href="#cb5-93" aria-hidden="true" tabindex="-1"></a>        <span class="st">'xtick.labelsize'</span>: <span class="dv">11</span>,</span>
+<span id="cb5-94"><a href="#cb5-94" aria-hidden="true" tabindex="-1"></a>        <span class="st">'ytick.labelsize'</span>: <span class="dv">11</span></span>
+<span id="cb5-95"><a href="#cb5-95" aria-hidden="true" tabindex="-1"></a>    },</span>
+<span id="cb5-96"><a href="#cb5-96" aria-hidden="true" tabindex="-1"></a>    marketcolors<span class="op">=</span>mpf.make_marketcolors(</span>
+<span id="cb5-97"><a href="#cb5-97" aria-hidden="true" tabindex="-1"></a>        up<span class="op">=</span><span class="st">'#2ca02c'</span>,</span>
+<span id="cb5-98"><a href="#cb5-98" aria-hidden="true" tabindex="-1"></a>        down<span class="op">=</span><span class="st">'#d62728'</span>,</span>
+<span id="cb5-99"><a href="#cb5-99" aria-hidden="true" tabindex="-1"></a>        edge<span class="op">=</span><span class="st">'inherit'</span>,</span>
+<span id="cb5-100"><a href="#cb5-100" aria-hidden="true" tabindex="-1"></a>        wick<span class="op">=</span><span class="st">'gray'</span>,</span>
+<span id="cb5-101"><a href="#cb5-101" aria-hidden="true" tabindex="-1"></a>        volume<span class="op">=</span><span class="st">'lightblue'</span></span>
+<span id="cb5-102"><a href="#cb5-102" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb5-103"><a href="#cb5-103" aria-hidden="true" tabindex="-1"></a>    gridcolor<span class="op">=</span><span class="st">'lightgray'</span>,</span>
+<span id="cb5-104"><a href="#cb5-104" aria-hidden="true" tabindex="-1"></a>    gridstyle<span class="op">=</span><span class="st">'--'</span>,</span>
+<span id="cb5-105"><a href="#cb5-105" aria-hidden="true" tabindex="-1"></a>    facecolor<span class="op">=</span><span class="st">'white'</span>,</span>
+<span id="cb5-106"><a href="#cb5-106" aria-hidden="true" tabindex="-1"></a>    figcolor<span class="op">=</span><span class="st">'white'</span></span>
+<span id="cb5-107"><a href="#cb5-107" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-108"><a href="#cb5-108" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-109"><a href="#cb5-109" aria-hidden="true" tabindex="-1"></a>apds <span class="op">=</span> [</span>
+<span id="cb5-110"><a href="#cb5-110" aria-hidden="true" tabindex="-1"></a>    mpf.make_addplot(df[<span class="st">'Bollinger_Upper_Band'</span>], color<span class="op">=</span><span class="st">'darkgreen'</span>, linestyle<span class="op">=</span><span class="st">'--'</span>, width<span class="op">=</span><span class="fl">1.2</span>),</span>
+<span id="cb5-111"><a href="#cb5-111" aria-hidden="true" tabindex="-1"></a>    mpf.make_addplot(df[<span class="st">'Bollinger_Lower_Band'</span>], color<span class="op">=</span><span class="st">'darkred'</span>, linestyle<span class="op">=</span><span class="st">'--'</span>, width<span class="op">=</span><span class="fl">1.2</span>),</span>
+<span id="cb5-112"><a href="#cb5-112" aria-hidden="true" tabindex="-1"></a>    mpf.make_addplot(df[<span class="st">'ATR'</span>], panel<span class="op">=</span><span class="dv">1</span>, color<span class="op">=</span><span class="st">'purple'</span>, width<span class="op">=</span><span class="fl">1.3</span>, ylabel<span class="op">=</span><span class="st">'ATR'</span>),</span>
+<span id="cb5-113"><a href="#cb5-113" aria-hidden="true" tabindex="-1"></a>    mpf.make_addplot(df[<span class="st">'reddit_sentiment'</span>], panel<span class="op">=</span><span class="dv">2</span>, color<span class="op">=</span><span class="st">'navy'</span>, width<span class="op">=</span><span class="fl">1.3</span>, ylabel<span class="op">=</span><span class="st">'Reddit Sentiment'</span>)</span>
+<span id="cb5-114"><a href="#cb5-114" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb5-115"><a href="#cb5-115" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-116"><a href="#cb5-116" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> mpf.plot(</span>
+<span id="cb5-117"><a href="#cb5-117" aria-hidden="true" tabindex="-1"></a>    df_candle,</span>
+<span id="cb5-118"><a href="#cb5-118" aria-hidden="true" tabindex="-1"></a>    <span class="bu">type</span><span class="op">=</span><span class="st">'candle'</span>,</span>
+<span id="cb5-119"><a href="#cb5-119" aria-hidden="true" tabindex="-1"></a>    style<span class="op">=</span>custom_style,</span>
+<span id="cb5-120"><a href="#cb5-120" aria-hidden="true" tabindex="-1"></a>    volume<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb5-121"><a href="#cb5-121" aria-hidden="true" tabindex="-1"></a>    addplot<span class="op">=</span>apds,</span>
+<span id="cb5-122"><a href="#cb5-122" aria-hidden="true" tabindex="-1"></a>    ylabel<span class="op">=</span><span class="st">'Price ($)'</span>,</span>
+<span id="cb5-123"><a href="#cb5-123" aria-hidden="true" tabindex="-1"></a>    ylabel_lower<span class="op">=</span><span class="st">'Volume'</span>,</span>
+<span id="cb5-124"><a href="#cb5-124" aria-hidden="true" tabindex="-1"></a>    panel_ratios<span class="op">=</span>(<span class="dv">3</span>, <span class="dv">1</span>, <span class="dv">1</span>),</span>
+<span id="cb5-125"><a href="#cb5-125" aria-hidden="true" tabindex="-1"></a>    figratio<span class="op">=</span>(<span class="dv">16</span>, <span class="dv">9</span>),</span>
+<span id="cb5-126"><a href="#cb5-126" aria-hidden="true" tabindex="-1"></a>    figscale<span class="op">=</span><span class="fl">1.5</span>,</span>
+<span id="cb5-127"><a href="#cb5-127" aria-hidden="true" tabindex="-1"></a>    returnfig<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb5-128"><a href="#cb5-128" aria-hidden="true" tabindex="-1"></a>    datetime_format<span class="op">=</span><span class="st">'%b </span><span class="sc">%d</span><span class="st">'</span></span>
+<span id="cb5-129"><a href="#cb5-129" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-130"><a href="#cb5-130" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-131"><a href="#cb5-131" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].text(</span>
+<span id="cb5-132"><a href="#cb5-132" aria-hidden="true" tabindex="-1"></a>    <span class="fl">0.5</span>, <span class="fl">0.95</span>,</span>
+<span id="cb5-133"><a href="#cb5-133" aria-hidden="true" tabindex="-1"></a>    <span class="st">'Tesla Volatility with Bollinger Bands, ATR &amp; Reddit Sentiment'</span>,</span>
+<span id="cb5-134"><a href="#cb5-134" aria-hidden="true" tabindex="-1"></a>    transform<span class="op">=</span>axes[<span class="dv">0</span>].transAxes,</span>
+<span id="cb5-135"><a href="#cb5-135" aria-hidden="true" tabindex="-1"></a>    fontsize<span class="op">=</span><span class="dv">14</span>,</span>
+<span id="cb5-136"><a href="#cb5-136" aria-hidden="true" tabindex="-1"></a>    fontweight<span class="op">=</span><span class="st">'bold'</span>,</span>
+<span id="cb5-137"><a href="#cb5-137" aria-hidden="true" tabindex="-1"></a>    fontfamily<span class="op">=</span><span class="st">'Times New Roman'</span>,</span>
+<span id="cb5-138"><a href="#cb5-138" aria-hidden="true" tabindex="-1"></a>    verticalalignment<span class="op">=</span><span class="st">'top'</span>,</span>
+<span id="cb5-139"><a href="#cb5-139" aria-hidden="true" tabindex="-1"></a>    horizontalalignment<span class="op">=</span><span class="st">'center'</span></span>
+<span id="cb5-140"><a href="#cb5-140" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-141"><a href="#cb5-141" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb5-142"><a href="#cb5-142" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb5-143"><a href="#cb5-143" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-144"><a href="#cb5-144" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-145"><a href="#cb5-145" aria-hidden="true" tabindex="-1"></a><span class="fu">## 🔍 **Tesla: Return %, and NYT Sentiment (March 24–27, 2025)**</span></span>
+<span id="cb5-146"><a href="#cb5-146" aria-hidden="true" tabindex="-1"></a>This multi-panel chart combines **Tesla’s daily candlestick prices** with **return percentages** and **New York Times sentiment scores**.</span>
+<span id="cb5-147"><a href="#cb5-147" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-148"><a href="#cb5-148" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**March 24** shows a strong **upward reversal**, with green candlesticks and rising returns aligning with a slightly negative **NYT sentiment**.</span>
+<span id="cb5-149"><a href="#cb5-149" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>A **positive return** on **March 25** coincides with improving sentiment, while **March 26** sees both **sentiment and return drop sharply**.</span>
+<span id="cb5-150"><a href="#cb5-150" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>By **March 27**, despite **neutral price movement**, sentiment plunges—highlighting a potential **disconnect between news tone and market behavior**.</span>
+<span id="cb5-151"><a href="#cb5-151" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>This suggests **sentiment shifts may lag or diverge** from short-term price dynamics.</span>
+<span id="cb5-152"><a href="#cb5-152" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-153"><a href="#cb5-153" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-156"><a href="#cb5-156" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb5-157"><a href="#cb5-157" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb5-158"><a href="#cb5-158" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb5-159"><a href="#cb5-159" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.dates <span class="im">as</span> mdates</span>
+<span id="cb5-160"><a href="#cb5-160" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> matplotlib.patches <span class="im">import</span> Rectangle</span>
+<span id="cb5-161"><a href="#cb5-161" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-162"><a href="#cb5-162" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.read_csv(<span class="st">"final_data.csv"</span>)</span>
+<span id="cb5-163"><a href="#cb5-163" aria-hidden="true" tabindex="-1"></a>df.columns <span class="op">=</span> df.columns.<span class="bu">str</span>.strip()</span>
+<span id="cb5-164"><a href="#cb5-164" aria-hidden="true" tabindex="-1"></a>df[<span class="st">'Date'</span>] <span class="op">=</span> pd.to_datetime(df[<span class="st">'Date'</span>])</span>
+<span id="cb5-165"><a href="#cb5-165" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-166"><a href="#cb5-166" aria-hidden="true" tabindex="-1"></a>start_date <span class="op">=</span> pd.to_datetime(<span class="st">"2025-03-24"</span>)</span>
+<span id="cb5-167"><a href="#cb5-167" aria-hidden="true" tabindex="-1"></a>end_date <span class="op">=</span> start_date <span class="op">+</span> pd.Timedelta(days<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb5-168"><a href="#cb5-168" aria-hidden="true" tabindex="-1"></a>march_df <span class="op">=</span> df[(df[<span class="st">'Date'</span>] <span class="op">&gt;=</span> start_date) <span class="op">&amp;</span> (df[<span class="st">'Date'</span>] <span class="op">&lt;=</span> end_date)].copy()</span>
+<span id="cb5-169"><a href="#cb5-169" aria-hidden="true" tabindex="-1"></a>march_df[<span class="st">'Daily_Return_%'</span>] <span class="op">=</span> march_df[<span class="st">'Close'</span>].pct_change() <span class="op">*</span> <span class="dv">100</span></span>
+<span id="cb5-170"><a href="#cb5-170" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-171"><a href="#cb5-171" aria-hidden="true" tabindex="-1"></a>fig, (ax1, ax2, ax3) <span class="op">=</span> plt.subplots(<span class="dv">3</span>, <span class="dv">1</span>, figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">10</span>), sharex<span class="op">=</span><span class="va">True</span>, gridspec_kw<span class="op">=</span>{<span class="st">'height_ratios'</span>: [<span class="dv">3</span>, <span class="dv">1</span>, <span class="dv">1</span>]})</span>
+<span id="cb5-172"><a href="#cb5-172" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-173"><a href="#cb5-173" aria-hidden="true" tabindex="-1"></a><span class="co"># --- Candlestick Plot ---</span></span>
+<span id="cb5-174"><a href="#cb5-174" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> _, row <span class="kw">in</span> march_df.iterrows():</span>
+<span id="cb5-175"><a href="#cb5-175" aria-hidden="true" tabindex="-1"></a>    date_num <span class="op">=</span> mdates.date2num(row[<span class="st">'Date'</span>])</span>
+<span id="cb5-176"><a href="#cb5-176" aria-hidden="true" tabindex="-1"></a>    color <span class="op">=</span> <span class="st">'green'</span> <span class="cf">if</span> row[<span class="st">'Close'</span>] <span class="op">&gt;=</span> row[<span class="st">'Open'</span>] <span class="cf">else</span> <span class="st">'red'</span></span>
+<span id="cb5-177"><a href="#cb5-177" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-178"><a href="#cb5-178" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Wick</span></span>
+<span id="cb5-179"><a href="#cb5-179" aria-hidden="true" tabindex="-1"></a>    ax1.plot([row[<span class="st">'Date'</span>], row[<span class="st">'Date'</span>]], [row[<span class="st">'Low'</span>], row[<span class="st">'High'</span>]], color<span class="op">=</span><span class="st">'black'</span>)</span>
+<span id="cb5-180"><a href="#cb5-180" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-181"><a href="#cb5-181" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Body</span></span>
+<span id="cb5-182"><a href="#cb5-182" aria-hidden="true" tabindex="-1"></a>    rect <span class="op">=</span> Rectangle((date_num <span class="op">-</span> <span class="fl">0.2</span>, <span class="bu">min</span>(row[<span class="st">'Open'</span>], row[<span class="st">'Close'</span>])),</span>
+<span id="cb5-183"><a href="#cb5-183" aria-hidden="true" tabindex="-1"></a>                     <span class="fl">0.4</span>,</span>
+<span id="cb5-184"><a href="#cb5-184" aria-hidden="true" tabindex="-1"></a>                     <span class="bu">abs</span>(row[<span class="st">'Close'</span>] <span class="op">-</span> row[<span class="st">'Open'</span>]),</span>
+<span id="cb5-185"><a href="#cb5-185" aria-hidden="true" tabindex="-1"></a>                     color<span class="op">=</span>color)</span>
+<span id="cb5-186"><a href="#cb5-186" aria-hidden="true" tabindex="-1"></a>    ax1.add_patch(rect)</span>
+<span id="cb5-187"><a href="#cb5-187" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-188"><a href="#cb5-188" aria-hidden="true" tabindex="-1"></a>ax1.set_ylabel(<span class="st">"Price ($)"</span>)</span>
+<span id="cb5-189"><a href="#cb5-189" aria-hidden="true" tabindex="-1"></a>ax1.set_title(<span class="st">"Tesla: Return %, and NYT Sentiment (March 24–27, 2025)"</span>)</span>
+<span id="cb5-190"><a href="#cb5-190" aria-hidden="true" tabindex="-1"></a>ax1.grid(<span class="va">True</span>)</span>
+<span id="cb5-191"><a href="#cb5-191" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-192"><a href="#cb5-192" aria-hidden="true" tabindex="-1"></a><span class="co"># --- Daily Return Plot ---</span></span>
+<span id="cb5-193"><a href="#cb5-193" aria-hidden="true" tabindex="-1"></a>ax2.bar(march_df[<span class="st">'Date'</span>], march_df[<span class="st">'Daily_Return_%'</span>], color<span class="op">=</span><span class="st">'skyblue'</span>)</span>
+<span id="cb5-194"><a href="#cb5-194" aria-hidden="true" tabindex="-1"></a>ax2.axhline(<span class="dv">0</span>, color<span class="op">=</span><span class="st">'black'</span>, linestyle<span class="op">=</span><span class="st">'--'</span>)</span>
+<span id="cb5-195"><a href="#cb5-195" aria-hidden="true" tabindex="-1"></a>ax2.set_ylabel(<span class="st">"Return (%)"</span>)</span>
+<span id="cb5-196"><a href="#cb5-196" aria-hidden="true" tabindex="-1"></a>ax2.grid(<span class="va">True</span>)</span>
+<span id="cb5-197"><a href="#cb5-197" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-198"><a href="#cb5-198" aria-hidden="true" tabindex="-1"></a><span class="co"># --- FinBERT Sentiment Plot ---</span></span>
+<span id="cb5-199"><a href="#cb5-199" aria-hidden="true" tabindex="-1"></a>ax3.plot(march_df[<span class="st">'Date'</span>], march_df[<span class="st">'nyt_sentiment'</span>], marker<span class="op">=</span><span class="st">'o'</span>, linestyle<span class="op">=</span><span class="st">'--'</span>, color<span class="op">=</span><span class="st">'red'</span>)</span>
+<span id="cb5-200"><a href="#cb5-200" aria-hidden="true" tabindex="-1"></a>ax3.set_ylabel(<span class="st">"NEW YORK TIME Sentiment"</span>)</span>
+<span id="cb5-201"><a href="#cb5-201" aria-hidden="true" tabindex="-1"></a>ax3.set_xlabel(<span class="st">"Date"</span>)</span>
+<span id="cb5-202"><a href="#cb5-202" aria-hidden="true" tabindex="-1"></a>ax3.grid(<span class="va">True</span>)</span>
+<span id="cb5-203"><a href="#cb5-203" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-204"><a href="#cb5-204" aria-hidden="true" tabindex="-1"></a>ax3.xaxis.set_major_formatter(mdates.DateFormatter(<span class="st">'%b </span><span class="sc">%d</span><span class="st">'</span>))</span>
+<span id="cb5-205"><a href="#cb5-205" aria-hidden="true" tabindex="-1"></a>fig.autofmt_xdate()</span>
+<span id="cb5-206"><a href="#cb5-206" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb5-207"><a href="#cb5-207" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb5-208"><a href="#cb5-208" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb5-209"><a href="#cb5-209" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-210"><a href="#cb5-210" aria-hidden="true" tabindex="-1"></a><span class="fu">## 🔍 **NYT Sentiment vs. MACD Indicator (2024–2025)**</span></span>
+<span id="cb5-211"><a href="#cb5-211" aria-hidden="true" tabindex="-1"></a>This dual-axis time series chart compares smoothed **New York Times sentiment scores** against **Tesla’s MACD indicator**. </span>
+<span id="cb5-212"><a href="#cb5-212" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-213"><a href="#cb5-213" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>A moderate positive correlation (**0.38**) is observed, especially during major events such as **Q1 2025's market dip and recovery**.</span>
+<span id="cb5-214"><a href="#cb5-214" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>While sentiment occasionally aligns with trend shifts, it often **lags behind technical indicators**, implying that **news sentiment alone may not be a reliable standalone signal** but can add explanatory value when combined with technical data.</span>
+<span id="cb5-215"><a href="#cb5-215" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-216"><a href="#cb5-216" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-219"><a href="#cb5-219" aria-hidden="true" tabindex="-1"></a><span class="in">```{python}</span></span>
+<span id="cb5-220"><a href="#cb5-220" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib</span>
+<span id="cb5-221"><a href="#cb5-221" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> logging</span>
+<span id="cb5-222"><a href="#cb5-222" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb5-223"><a href="#cb5-223" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> plotly.graph_objects <span class="im">as</span> go</span>
+<span id="cb5-224"><a href="#cb5-224" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb5-225"><a href="#cb5-225" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-226"><a href="#cb5-226" aria-hidden="true" tabindex="-1"></a>logging.getLogger(<span class="st">'matplotlib.font_manager'</span>).setLevel(logging.ERROR)</span>
+<span id="cb5-227"><a href="#cb5-227" aria-hidden="true" tabindex="-1"></a>pd.options.mode.chained_assignment <span class="op">=</span> <span class="va">None</span>  <span class="co"># &lt;--- This suppresses the SettingWithCopyWarning</span></span>
+<span id="cb5-228"><a href="#cb5-228" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-229"><a href="#cb5-229" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> pd.read_csv(<span class="st">'final_data.csv'</span>, parse_dates<span class="op">=</span>[<span class="st">'Date'</span>])</span>
+<span id="cb5-230"><a href="#cb5-230" aria-hidden="true" tabindex="-1"></a>data.sort_values(<span class="st">'Date'</span>, inplace<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb5-231"><a href="#cb5-231" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-232"><a href="#cb5-232" aria-hidden="true" tabindex="-1"></a>one_year_data <span class="op">=</span> data[data[<span class="st">'Date'</span>] <span class="op">&gt;=</span> (data[<span class="st">'Date'</span>].<span class="bu">max</span>() <span class="op">-</span> pd.DateOffset(years<span class="op">=</span><span class="dv">1</span>))].copy()</span>
+<span id="cb5-233"><a href="#cb5-233" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-234"><a href="#cb5-234" aria-hidden="true" tabindex="-1"></a>one_year_data.loc[:, <span class="st">'nyt_sentiment_smooth'</span>] <span class="op">=</span> one_year_data[<span class="st">'nyt_sentiment'</span>].rolling(window<span class="op">=</span><span class="dv">7</span>).mean()</span>
+<span id="cb5-235"><a href="#cb5-235" aria-hidden="true" tabindex="-1"></a>one_year_data.loc[:, <span class="st">'macd_smooth'</span>] <span class="op">=</span> one_year_data[<span class="st">'MACD'</span>].rolling(window<span class="op">=</span><span class="dv">7</span>).mean()</span>
+<span id="cb5-236"><a href="#cb5-236" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-237"><a href="#cb5-237" aria-hidden="true" tabindex="-1"></a>correlation <span class="op">=</span> one_year_data[[<span class="st">'nyt_sentiment_smooth'</span>, <span class="st">'macd_smooth'</span>]].corr().iloc[<span class="dv">0</span>, <span class="dv">1</span>]</span>
+<span id="cb5-238"><a href="#cb5-238" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-239"><a href="#cb5-239" aria-hidden="true" tabindex="-1"></a><span class="co"># --- Visualization ---</span></span>
+<span id="cb5-240"><a href="#cb5-240" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> go.Figure()</span>
+<span id="cb5-241"><a href="#cb5-241" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-242"><a href="#cb5-242" aria-hidden="true" tabindex="-1"></a>fig.add_trace(go.Scatter(</span>
+<span id="cb5-243"><a href="#cb5-243" aria-hidden="true" tabindex="-1"></a>    x<span class="op">=</span>one_year_data[<span class="st">'Date'</span>], </span>
+<span id="cb5-244"><a href="#cb5-244" aria-hidden="true" tabindex="-1"></a>    y<span class="op">=</span>one_year_data[<span class="st">'nyt_sentiment_smooth'</span>], </span>
+<span id="cb5-245"><a href="#cb5-245" aria-hidden="true" tabindex="-1"></a>    mode<span class="op">=</span><span class="st">'lines'</span>, </span>
+<span id="cb5-246"><a href="#cb5-246" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=</span><span class="st">'NYT Sentiment (Smoothed)'</span>, </span>
+<span id="cb5-247"><a href="#cb5-247" aria-hidden="true" tabindex="-1"></a>    line<span class="op">=</span><span class="bu">dict</span>(color<span class="op">=</span><span class="st">'blue'</span>)</span>
+<span id="cb5-248"><a href="#cb5-248" aria-hidden="true" tabindex="-1"></a>))</span>
+<span id="cb5-249"><a href="#cb5-249" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-250"><a href="#cb5-250" aria-hidden="true" tabindex="-1"></a>fig.add_trace(go.Scatter(</span>
+<span id="cb5-251"><a href="#cb5-251" aria-hidden="true" tabindex="-1"></a>    x<span class="op">=</span>one_year_data[<span class="st">'Date'</span>], </span>
+<span id="cb5-252"><a href="#cb5-252" aria-hidden="true" tabindex="-1"></a>    y<span class="op">=</span>one_year_data[<span class="st">'macd_smooth'</span>], </span>
+<span id="cb5-253"><a href="#cb5-253" aria-hidden="true" tabindex="-1"></a>    mode<span class="op">=</span><span class="st">'lines'</span>, </span>
+<span id="cb5-254"><a href="#cb5-254" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=</span><span class="st">'MACD (Smoothed)'</span>, </span>
+<span id="cb5-255"><a href="#cb5-255" aria-hidden="true" tabindex="-1"></a>    line<span class="op">=</span><span class="bu">dict</span>(color<span class="op">=</span><span class="st">'green'</span>),</span>
+<span id="cb5-256"><a href="#cb5-256" aria-hidden="true" tabindex="-1"></a>    yaxis<span class="op">=</span><span class="st">'y2'</span></span>
+<span id="cb5-257"><a href="#cb5-257" aria-hidden="true" tabindex="-1"></a>))</span>
+<span id="cb5-258"><a href="#cb5-258" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-259"><a href="#cb5-259" aria-hidden="true" tabindex="-1"></a>fig.update_layout(</span>
+<span id="cb5-260"><a href="#cb5-260" aria-hidden="true" tabindex="-1"></a>    title<span class="op">=</span><span class="ss">f"NYT Sentiment vs. MACD Over the Last Year (Correlation: </span><span class="sc">{</span>correlation<span class="sc">:.2f}</span><span class="ss">)"</span>,</span>
+<span id="cb5-261"><a href="#cb5-261" aria-hidden="true" tabindex="-1"></a>    xaxis_title<span class="op">=</span><span class="st">"Date"</span>,</span>
+<span id="cb5-262"><a href="#cb5-262" aria-hidden="true" tabindex="-1"></a>    yaxis_title<span class="op">=</span><span class="st">"NYT Sentiment"</span>,</span>
+<span id="cb5-263"><a href="#cb5-263" aria-hidden="true" tabindex="-1"></a>    yaxis2<span class="op">=</span><span class="bu">dict</span>(title<span class="op">=</span><span class="st">"MACD"</span>, overlaying<span class="op">=</span><span class="st">'y'</span>, side<span class="op">=</span><span class="st">'right'</span>),</span>
+<span id="cb5-264"><a href="#cb5-264" aria-hidden="true" tabindex="-1"></a>    legend_title<span class="op">=</span><span class="st">"Metrics"</span>,</span>
+<span id="cb5-265"><a href="#cb5-265" aria-hidden="true" tabindex="-1"></a>    template<span class="op">=</span><span class="st">"plotly_white"</span></span>
+<span id="cb5-266"><a href="#cb5-266" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-267"><a href="#cb5-267" aria-hidden="true" tabindex="-1"></a>fig.show()</span>
+<span id="cb5-268"><a href="#cb5-268" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+</code><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></pre></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

@@ -1,0 +1,45 @@
+/* Visually center navbar links across ALL Quarto pages */
+.navbar {
+  position: relative;
+}
+
+.navbar > .container-fluid {
+  justify-content: center;
+}
+
+.navbar-nav {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+/* Force consistent navbar color across all pages */
+.navbar {
+  background-color: #4f7898 !important;
+}
+
+.navbar .navbar-brand,
+.navbar .navbar-nav .nav-link,
+.navbar .navbar-nav .nav-link.active {
+  color: #ffffff !important;
+}
+
+/* Ensure icons (search, dropdown) are visible */
+.navbar .bi,
+.navbar .navbar-toggler-icon {
+  filter: brightness(0) invert(1);
+}
+
+
+/* Make navbar text size consistent on every page */
+.navbar .navbar-brand,
+.navbar .navbar-nav .nav-link {
+  font-size: 1rem !important;
+  line-height: 1.2 !important;
+}
+
+.navbar .navbar-nav .nav-link {
+  padding-top: 0.5rem !important;
+  padding-bottom: 0.5rem !important;
+}
+
+
